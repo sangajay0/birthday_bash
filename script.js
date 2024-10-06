@@ -1,5 +1,3 @@
-// script.js
-
 document.addEventListener("DOMContentLoaded", onLoad);
 
 function onLoad() {
@@ -47,14 +45,12 @@ function onLoad() {
     .catch((error) => console.error("Error loading conversation:", error));
 }
 
-// Check if the user agent corresponds to a mobile device
 function isMobileDevice() {
   const mobilePattern =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
   return mobilePattern.test(navigator.userAgent);
 }
 
-// Redirect the user if not using a mobile device
 function blockNonMobileDevices() {
   if (!isMobileDevice()) {
     window.location.href = "/error.html";
@@ -105,9 +101,9 @@ function openFullScreenImage(element) {
 }
 
 function changeImageSrc(newSrc) {
-  const imgElement = document.getElementById("dpImage"); // Get the img element by its id
+  const imgElement = document.getElementById("dpImage");
   if (imgElement) {
-    imgElement.src = newSrc; // Set the src attribute to the new path
+    imgElement.src = newSrc;
   }
 }
 
@@ -137,7 +133,6 @@ function sendResponseMessage(textToSend) {
 
 function sendMsg(input) {
   console.log(input);
-  var ti = input;
   if (input.value == "") {
     return;
   }
@@ -154,7 +149,7 @@ function sendMsg(input) {
   myDiv.setAttribute("class", "sent");
   greendiv.setAttribute("class", "green");
   dateLabel.setAttribute("class", "dateLabel");
-  greendiv.innerText = input;
+  greendiv.innerText = input.value;
   myDiv.appendChild(greendiv);
   myLI.appendChild(myDiv);
   greendiv.appendChild(dateLabel);
@@ -163,8 +158,7 @@ function sendMsg(input) {
   s.scrollTop = s.scrollHeight;
 }
 
-// Example usage: Add a chat message when the page loads
 window.onload = function () {
   onLoad();
-  addChatMessage("Welcome to Niranjana's Birthday Bash!");
+  sendResponseMessage("Welcome to Niranjana's Birthday Bash!");
 };
