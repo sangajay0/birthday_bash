@@ -3,24 +3,21 @@
     "id": 0,
     "message": [
       "Hey there! 🎉",
-      "We are thrilled to invite you to <b>Niranjana's</b> birthday bash! 🎂",
-      "Join us for a day full of fun, laughter, and memories. 🎈"
     ],
     "buttons": [
       {
-        "text": "🎁 When is the Party?",
-        "next": 2
+        "text": "Happy birthday Bestie 🎉",
+        "next": 1
       }
     ]
   },
   {
     "id": 1,
-    "message": ["<b>Save the Date</b> "],
-    "image": ["Birthday_Invitation.jpeg"],
+    "message": ["Thank you! 😊🎂"],
     "buttons": [
       {
-        "text": "Show me the fun moments 📸",
-        "next": 4
+        "text": "🎁 When is the Party?",
+        "next": 2
       }
     ]
   },
@@ -48,7 +45,7 @@
     "buttons": [
       {
         "text": "Tell me more! 😍",
-        "next": 1
+        "next": 4
       }
     ]
   },
