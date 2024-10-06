@@ -1,21 +1,17 @@
 [
   {
     "id": 0,
-    "message": [
-      "Hey there! 🎉",
-      "We are thrilled to invite you to <b>Niranjana's</b> birthday bash! 🎂",
-      "Join us for a day full of fun, laughter, and memories. 🎈"
-    ],
+    "message": ["Hey there! 🎉"],
     "buttons": [
       {
-        "text": "🎁 When is the Party?",
+        "text": "🎁 Happy Birthday Bestie",
         "next": 2
       }
     ]
   },
   {
     "id": 1,
-    "message": ["<b>Save the Date</b> "],
+    "message": ["Thank you for the wishes! 🥰"],
     "image": ["Birthday_Invitation.jpeg"],
     "buttons": [
       {
