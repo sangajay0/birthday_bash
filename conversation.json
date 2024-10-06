@@ -1,0 +1,95 @@
+[
+  {
+    "id": 0,
+    "message": [
+      "Hey there! 🎉",
+      "We are thrilled to invite you to <b>Niranjana's</b> birthday bash! 🎂",
+      "Join us for a day full of fun, laughter, and memories. 🎈"
+    ],
+    "buttons": [
+      {
+        "text": "🎁 When is the Party?",
+        "next": 2
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "message": ["<b>Save the Date</b> "],
+    "image": ["Birthday_Invitation.jpeg"],
+    "buttons": [
+      {
+        "text": "Show me the fun moments 📸",
+        "next": 4
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "message": [
+      "It's on <b>March 15, 2024</b>",
+      "Time: 5:00 PM onwards",
+      "Don't miss the cake cutting at 6:00 PM 🎂",
+      "We can't wait to celebrate with you! 🎉"
+    ],
+    "buttons": [
+      {
+        "text": "Where is it happening? 📍",
+        "next": 3
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "message": [
+      "Venue: Sunshine Gardens, Near City Park, Downtown.",
+      "Find Directions: <a href='https://maps.app.goo.gl/xyz123' target='blank'>Click Here to go to Maps</a>"
+    ],
+    "buttons": [
+      {
+        "text": "Tell me more! 😍",
+        "next": 1
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "image": ["Niranjana_Solo.jpg", "Niranjana_Friends.jpg"],
+    "buttons": [
+      {
+        "text": "Show me more! 😉",
+        "next": 5
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "image": ["Party_1.jpg", "Party_2.jpg"],
+    "buttons": [
+      {
+        "text": "One more! 🥳",
+        "next": 6
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "message": ["Best moments with friends! 💖"],
+    "image": ["Group_Photo.jpg"],
+    "buttons": [
+      {
+        "text": "Can't wait! I'll be there ❤️",
+        "next": 7
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "message": [
+      "Awesome! We can't wait to celebrate with you. See you at the party! 🎉🎉🎉",
+      "Meanwhile, check out our birthday video 👇👇👇",
+      "<a href='https://youtube.com/shorts/abc123?feature=share' target='blank'>Birthday Video - YouTube</a>",
+      "Designed by <a href='https://www.linkedin.com/in/designer/' target='blank'>Creative Designer 😎</a>"
+    ]
+  }
+]
