@@ -6,18 +6,18 @@
     ],
     "buttons": [
       {
-        "text": "Happy birthday Bestie 🎉",
-        "next": 1
+        "text": ""Happy birthday Bestie 🎉"",
+        "next": 2
       }
     ]
   },
   {
     "id": 1,
-    "message": ["Thank you! 😊🎂"],
+    "message": ["Thank you! 😊🎂""],
     "buttons": [
       {
-        "text": "🎁 When is the Party?",
-        "next": 2
+        "text": "Show me the fun moments 📸",
+        "next": 4
       }
     ]
   },
@@ -45,7 +45,7 @@
     "buttons": [
       {
         "text": "Tell me more! 😍",
-        "next": 4
+        "next": 1
       }
     ]
   },
