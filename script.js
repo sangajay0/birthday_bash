@@ -1,7 +1,8 @@
 // script.js
 
+document.addEventListener("DOMContentLoaded", onLoad);
+
 function onLoad() {
-  // Initialize the page
   console.log("Page loaded");
   setLastSeen();
 
@@ -12,71 +13,38 @@ function onLoad() {
     .then((response) => response.json())
     .then((data) => {
       let currentStep = 0;
+      displayStep(data, currentStep);
 
-      function displayMessage(step, message, currIdx, ttlSize) {
-        if (ttlSize == currIdx + 1) {
-          setTyping();
-          sendResponseMessage(message);
-          displayButtons(step.buttons);
-        } else {
-          hideButtons();
-          setTyping();
-          sendResponseMessage(message);
-        }
-      }
+      function displayStep(data, stepId) {
+        const step = data.find((item) => item.id === stepId);
+        if (!step) return;
 
-      function displayButtons(buttons) {
+        chatContainer.innerHTML = "";
         buttonsContainer.innerHTML = "";
-        buttons.forEach((button) => {
+
+        step.message?.forEach((msg) => {
+          const messageElement = document.createElement("p");
+          messageElement.innerHTML = msg;
+          chatContainer.appendChild(messageElement);
+        });
+
+        step.image?.forEach((imgSrc) => {
+          const imgElement = document.createElement("img");
+          imgElement.src = imgSrc;
+          chatContainer.appendChild(imgElement);
+        });
+
+        step.buttons?.forEach((button) => {
           const buttonElement = document.createElement("button");
-          buttonElement.className = "message-button";
           buttonElement.textContent = button.text;
           buttonElement.addEventListener("click", () => {
-            currentStep = button.next;
-            sendMsg(button.text);
-            nextStep();
+            displayStep(data, button.next);
           });
           buttonsContainer.appendChild(buttonElement);
         });
       }
-
-      function hideButtons() {
-        buttonsContainer.innerHTML = "";
-      }
-
-      function nextStep() {
-        if (currentStep < data.length) {
-          const step = data[currentStep];
-          if (step.hasOwnProperty("message")) {
-            for (let i = 0; i < step.message.length; i++) {
-              setTimeout(function () {
-                displayMessage(step, step.message[i], i, step.message.length);
-              }, (i + 1) * 1500);
-            }
-          }
-          if (step.hasOwnProperty("image")) {
-            for (let i = 0; i < step.image.length; i++) {
-              setTimeout(function () {
-                displayMessage(
-                  step,
-                  "<img src='" +
-                    step.image[i] +
-                    "' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto; display: block; overflow: hidden;'>",
-                  i,
-                  step.image.length
-                );
-              }, (i + 1) * 1500);
-            }
-          }
-        }
-      }
-
-      console.log("Started Conv");
-      nextStep(); // Start the conversation
     })
-    .catch((error) => {
-      console.error("Error loading JSON data:", error);
-    });
+    .catch((error) => console.error("Error loading conversation:", error));
 }
 
 // Check if the user agent corresponds to a mobile device
