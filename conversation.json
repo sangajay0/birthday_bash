@@ -14,7 +14,8 @@
   },
   {
     "userInitiated": true,
-    "image": ["dp.png"],
+    "image": ["birthday_bash
+/dp.png"],
     "buttons": [
       {
         "text": "Send Image",
