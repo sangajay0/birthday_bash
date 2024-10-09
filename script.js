@@ -16,15 +16,16 @@ function onLoad() {
         setTyping();
         setTimeout(() => {
           // Check if message is an image or text
-          if (step.image) {
-            step.image.forEach((imgUrl) => {
-               sendMsg(
-          `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;block; overflow: hidden;'>`
-        );
-            });
-          } else {
-            sendResponseMessage(message);
-          }
+          if (step.hasOwnProperty("image")) {
+    console.log("Images found:", step.image); // Log the images array
+    for (let i = 0; i < step.image.length; i++) {
+        setTimeout(function () {
+            displayMessage(step,"<img src='" + step.image[i] + "' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto; display: block; overflow: hidden;'>", i, step.image.length);
+        }, (i + 1) * 1500);
+    }
+} else {
+    console.log("No images found in step object");
+}
           
           if (currIdx + 1 === ttlSize) {
             if (step.buttons) displayButtons(step.buttons); // Show buttons for user interaction
