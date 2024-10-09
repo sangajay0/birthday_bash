@@ -17,7 +17,7 @@
     "image": ["dp.png"],
     "buttons": [
       {
-        "text": "Send Image",
+        "text": "View Image",
         "next": 3
       }
     ]
