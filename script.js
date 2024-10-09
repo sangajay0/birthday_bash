@@ -34,16 +34,17 @@ function onLoad() {
       currentStep = button.next;
 
       // Check if the current step is an image or a text message
-      const step = data[currentStep - 1];
-      if (step.image) {
-        // Send the image as a message
-        step.image.forEach((imgUrl) => {
-          sendMsg(`<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`);
-        });
-      } else {
-        // Send text message
-        sendMsg(button.text);
-      }
+      const step = data[currentStep - 1]; // Get the current step from data 
+if (step.image) {
+  step.image.forEach((imgUrl) => {
+    sendMsg(
+      `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`
+    );
+  });
+} else {
+  sendMsg(button.text); // Send text if no image
+}
+
       
       nextStep();
     });
