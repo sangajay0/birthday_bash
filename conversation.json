@@ -1,5 +1,6 @@
 [
   {
+    "userInitiated": true,
     "message": ["Hey bestie, happy birthday"],
     "buttons": [
       {
@@ -18,6 +19,7 @@
     ]
   },
   {
+    "userInitiated": true,
     "image": ["your_image_url_here"],
     "buttons": [
       {
