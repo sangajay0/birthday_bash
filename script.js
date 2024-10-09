@@ -25,19 +25,32 @@ function onLoad() {
       }
 
       function displayButtons(buttons) {
-        buttonsContainer.innerHTML = "";
-        buttons.forEach((button) => {
-          const buttonElement = document.createElement("button");
-          buttonElement.className = "message-button";
-          buttonElement.textContent = button.text;
-          buttonElement.addEventListener("click", () => {
-            currentStep = button.next;
-            sendMsg(button.text);
-            nextStep();
-          });
-          buttonsContainer.appendChild(buttonElement);
+  buttonsContainer.innerHTML = "";
+  buttons.forEach((button) => {
+    const buttonElement = document.createElement("button");
+    buttonElement.className = "message-button";
+    buttonElement.textContent = button.text;
+    buttonElement.addEventListener("click", () => {
+      currentStep = button.next;
+
+      // Check if the current step is an image or a text message
+      const step = data[currentStep - 1];
+      if (step.image) {
+        // Send the image as a message
+        step.image.forEach((imgUrl) => {
+          sendMsg(`<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`);
         });
+      } else {
+        // Send text message
+        sendMsg(button.text);
       }
+      
+      nextStep();
+    });
+    buttonsContainer.appendChild(buttonElement);
+  });
+}
+
 
       function hideButtons() {
         buttonsContainer.innerHTML = "";
