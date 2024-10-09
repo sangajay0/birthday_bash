@@ -16,19 +16,18 @@ function onLoad() {
         setTyping();
         setTimeout(() => {
           // Check if message is an image or text
-          if (step.hasOwnProperty("image")) {
-    console.log("Images found:", step.image); // Log the images array
-    for (let i = 0; i < step.image.length; i++) {
-        setTimeout(function () {
-            displayMessage(step,"<img src='" + step.image[i] + "' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto; display: block; overflow: hidden;'>", i, step.image.length);
-        }, (i + 1) * 1500);
-    }
-} else {
-    console.log("No images found in step object");
-}
-          
-          if (currIdx + 1 === ttlSize) {
-            if (step.buttons) displayButtons(step.buttons); // Show buttons for user interaction
+          if (step.image) {
+            step.image.forEach((imgUrl) => {
+              sendMsg(
+                `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto; block; overflow: hidden;'>`
+              );
+            });
+          } else {
+            sendResponseMessage(message);
+          }
+
+          if (currIdx + 1 === ttlSize && step.buttons) {
+            displayButtons(step.buttons); // Show buttons for user interaction
           }
         }, 1500);
       }
@@ -63,7 +62,7 @@ function onLoad() {
         if (currentStep < data.length) {
           const step = data[currentStep];
 
-          // User-initiated message or image with button
+          // Check for user-initiated actions
           if (step.userInitiated) {
             if (step.buttons) {
               displayButtons(step.buttons);
@@ -81,6 +80,8 @@ function onLoad() {
                 }, (idx + 1) * 1500);
               });
             }
+
+            // Handle images separately, if any
             if (step.image) {
               step.image.forEach((imgUrl, idx) => {
                 setTimeout(() => {
@@ -127,15 +128,10 @@ function setTyping() {
 function setLastSeen() {
   const date = new Date();
   const lastSeen = document.getElementById("lastseen");
-  lastSeen.innerText = "last seen today at " +
-    date.toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    });
+  lastSeen.innerText = "last seen today at " + date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
 }
 
-function closeFullimage() {
+function closeFullImage() {
   const x = document.getElementById("fullScreenDP");
   x.style.display = x.style.display === "flex" ? "none" : "flex";
 }
@@ -143,7 +139,7 @@ function closeFullimage() {
 function openFullScreenImage(element) {
   changeImageSrc(element.src);
   const x = document.getElementById("fullScreenDP");
-  x.style.display = x.style.display === "flex" ? "none" : "flex";
+  x.style.display = "flex"; // Open the fullscreen image
 }
 
 function changeImageSrc(newSrc) {
@@ -153,47 +149,36 @@ function changeImageSrc(newSrc) {
   }
 }
 
-function sendResponseMessage(textToSend) {
+// Consolidated send message function
+function sendMessage(textToSend, type = 'received') {
   const date = new Date();
   const myLI = document.createElement("li");
   const myDiv = document.createElement("div");
   const greendiv = document.createElement("div");
   const dateLabel = document.createElement("label");
+  
   dateLabel.className = "dateLabel";
-  dateLabel.innerText = date.toLocaleString("en-US", {
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  });
-  myDiv.className = "received";
-  greendiv.className = "grey";
+  dateLabel.innerText = date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
+  
+  myDiv.className = type === 'sent' ? "sent" : "received";
+  greendiv.className = type === 'sent' ? "green" : "grey";
   greendiv.innerHTML = textToSend;
+  
   myDiv.appendChild(greendiv);
   myLI.appendChild(myDiv);
   greendiv.appendChild(dateLabel);
   document.getElementById("listUL").appendChild(myLI);
+  
   setLastSeen();
 }
 
+// Specific functions for sending messages
+function sendResponseMessage(textToSend) {
+  sendMessage(textToSend, 'received');
+}
+
 function sendMsg(input) {
-  const date = new Date();
-  const myLI = document.createElement("li");
-  const myDiv = document.createElement("div");
-  const greendiv = document.createElement("div");
-  const dateLabel = document.createElement("label");
-  dateLabel.className = "dateLabel";
-  dateLabel.innerText = date.toLocaleString("en-US", {
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  });
-  myDiv.className = "sent";
-  greendiv.className = "green";
-  greendiv.innerText = input;
-  myDiv.appendChild(greendiv);
-  myLI.appendChild(myDiv);
-  greendiv.appendChild(dateLabel);
-  document.getElementById("listUL").appendChild(myLI);
+  sendMessage(input, 'sent');
 }
 
 // Initialize the conversation on page load
