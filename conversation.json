@@ -1,32 +1,14 @@
 [
   {
     "userInitiated": true,
-    "message": ["Hey bestie, happy birthday"],
-    "buttons": [
-      {
-        "text": "Send",
-        "next": 1
-      }
-    ]
+    "message": ["Hey bestie, happy birthday"]
   },
   {
-    "message": ["Thank you"],
-    "buttons": [
-      {
-        "text": "Send Image",
-        "next": 2
-      }
-    ]
+    "message": ["Thank you"]
   },
   {
     "userInitiated": true,
-    "image": ["your_image_url_here"],
-    "buttons": [
-      {
-        "text": "Send",
-        "next": 3
-      }
-    ]
+    "image": ["your_image_url_here"]
   },
   {
     "message": ["Thank you so much"]
