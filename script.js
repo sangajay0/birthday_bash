@@ -14,17 +14,28 @@ function onLoad() {
       let currentStep = 0;
 
       function displayMessage(step, message, currIdx, ttlSize) {
-        hideButtons(); // Hide buttons initially
-        setTyping();
-        setTimeout(() => {
-          sendResponseMessage(message);
-          if (currIdx + 1 === ttlSize) {
-            if (step.buttons) displayButtons(step.buttons); // Show buttons for user interaction
-          }
-        }, 1500);
-      }
+  hideButtons(); // Hide buttons initially
+  setTyping();
+  setTimeout(() => {
+    // Check if message is an image or text
+    if (step.image) {
+      step.image.forEach((imgUrl) => {
+        sendMsg(
+          `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`
+        );
+      });
+    } else {
+      sendResponseMessage(message);
+    }
+    
+    if (currIdx + 1 === ttlSize) {
+      if (step.buttons) displayButtons(step.buttons); // Show buttons for user interaction
+    }
+  }, 1500);
+}
 
-      function displayButtons(buttons) {
+// In your displayButtons function, send text directly instead of via sendMsg
+function displayButtons(buttons) {
   buttonsContainer.innerHTML = "";
   buttons.forEach((button) => {
     const buttonElement = document.createElement("button");
@@ -33,19 +44,12 @@ function onLoad() {
     buttonElement.addEventListener("click", () => {
       currentStep = button.next;
 
-      // Check if the current step is an image or a text message
-      const step = data[currentStep - 1]; // Get the current step from data 
-if (step.image) {
-  step.image.forEach((imgUrl) => {
-    sendMsg(
-      `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`
-    );
-  });
-} else {
-  sendMsg(button.text); // Send text if no image
-}
+      // Get the current step from data
+      const step = data[currentStep - 1];
+      if (step.userInitiated) {
+        sendMsg(button.text); // Send text if the user initiated
+      }
 
-      
       nextStep();
     });
     buttonsContainer.appendChild(buttonElement);
