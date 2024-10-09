@@ -47,26 +47,10 @@ function onLoad() {
   if (currentStep < data.length) {
     const step = data[currentStep];
 
-    // Check if the message is user-initiated
+    // User-initiated message or image with button
     if (step.userInitiated) {
-      // User message or image
-      if (step.message) {
-        step.message.forEach((msg, idx) => {
-          setTimeout(() => {
-            sendMsg(msg); // User sends the message
-            currentStep++; // Move to next step after user message
-            nextStep(); // Trigger next response automatically
-          }, 1500);
-        });
-      }
-      if (step.image) {
-        step.image.forEach((imgUrl, idx) => {
-          setTimeout(() => {
-            sendMsg(`<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`); // User sends the image
-            currentStep++; // Move to next step after user image
-            nextStep(); // Trigger next response automatically
-          }, (idx + 1) * 1500);
-        });
+      if (step.buttons) {
+        displayButtons(step.buttons);
       }
     } else {
       // Automatic response from Niranjana
@@ -75,8 +59,8 @@ function onLoad() {
           setTimeout(() => {
             displayMessage(step, msg, idx, step.message.length);
             if (idx + 1 === step.message.length) {
-              currentStep++; // Move to the next step after response
-              nextStep(); // Trigger the next step automatically
+              currentStep++;
+              nextStep();
             }
           }, (idx + 1) * 1500);
         });
@@ -86,8 +70,8 @@ function onLoad() {
           setTimeout(() => {
             displayMessage(step, `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`, idx, step.image.length);
             if (idx + 1 === step.image.length) {
-              currentStep++; // Move to the next step after response
-              nextStep(); // Trigger the next step automatically
+              currentStep++;
+              nextStep();
             }
           }, (idx + 1) * 1500);
         });
@@ -95,6 +79,7 @@ function onLoad() {
     }
   }
 }
+
 
 
 
