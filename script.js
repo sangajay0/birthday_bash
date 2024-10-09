@@ -1,6 +1,7 @@
-document.addEventListener("DOMContentLoaded", onLoad);
+// script.js
 
 function onLoad() {
+  // Initialize the page
   console.log("Page loaded");
   setLastSeen();
 
@@ -11,43 +12,68 @@ function onLoad() {
     .then((response) => response.json())
     .then((data) => {
       let currentStep = 0;
-      displayStep(data, currentStep);
 
-      function displayStep(data, stepId) {
-        const step = data.find((item) => item.id === stepId);
-        if (!step) return;
+      function displayMessage(step, message, currIdx, ttlSize) {
+        hideButtons(); // Hide buttons initially
+        setTyping();
+        setTimeout(() => {
+          sendResponseMessage(message);
+          if (currIdx + 1 === ttlSize) {
+            if (step.buttons) displayButtons(step.buttons); // Show buttons for user interaction
+          }
+        }, 1500);
+      }
 
-        chatContainer.innerHTML = "";
+      function displayButtons(buttons) {
         buttonsContainer.innerHTML = "";
-
-        step.message?.forEach((msg) => {
-          const messageElement = document.createElement("p");
-          messageElement.innerHTML = msg;
-          chatContainer.appendChild(messageElement);
-        });
-
-        step.image?.forEach((imgSrc) => {
-          const imgElement = document.createElement("img");
-          imgElement.src = imgSrc;
-          chatContainer.appendChild(imgElement);
-        });
-
-        step.buttons?.forEach((button) => {
+        buttons.forEach((button) => {
           const buttonElement = document.createElement("button");
+          buttonElement.className = "message-button";
           buttonElement.textContent = button.text;
           buttonElement.addEventListener("click", () => {
-            displayStep(data, button.next);
+            currentStep = button.next;
+            sendMsg(button.text);
+            nextStep();
           });
           buttonsContainer.appendChild(buttonElement);
         });
       }
+
+      function hideButtons() {
+        buttonsContainer.innerHTML = "";
+      }
+
+      function nextStep() {
+        if (currentStep < data.length) {
+          const step = data[currentStep];
+          if (step.message) {
+            step.message.forEach((msg, idx) => {
+              displayMessage(step, msg, idx, step.message.length);
+            });
+          }
+          if (step.image) {
+            step.image.forEach((imgUrl, idx) => {
+              setTimeout(() => {
+                sendResponseMessage(`<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`);
+                if (idx + 1 === step.image.length && step.buttons) {
+                  displayButtons(step.buttons);
+                }
+              }, (idx + 1) * 1500);
+            });
+          }
+        }
+      }
+
+      console.log("Started Conversation");
+      nextStep(); // Start the conversation
     })
-    .catch((error) => console.error("Error loading conversation:", error));
+    .catch((error) => {
+      console.error("Error loading JSON data:", error);
+    });
 }
 
 function isMobileDevice() {
-  const mobilePattern =
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  const mobilePattern = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
   return mobilePattern.test(navigator.userAgent);
 }
 
@@ -62,42 +88,30 @@ function delay(ms) {
 }
 
 function setTyping() {
-  var lastSeen = document.getElementById("lastseen");
+  const lastSeen = document.getElementById("lastseen");
   lastSeen.innerText = "typing...";
-  console.log("typing");
 }
 
 function setLastSeen() {
-  var date = new Date();
-  var lastSeen = document.getElementById("lastseen");
-  lastSeen.innerText =
-    "last seen today at " +
+  const date = new Date();
+  const lastSeen = document.getElementById("lastseen");
+  lastSeen.innerText = "last seen today at " +
     date.toLocaleString("en-US", {
       hour: "numeric",
       minute: "numeric",
       hour12: true,
     });
-  var s = document.getElementById("chatting");
-  s.scrollTop = s.scrollHeight;
 }
 
 function closeFullimage() {
-  var x = document.getElementById("fullScreenDP");
-  if (x.style.display === "flex") {
-    x.style.display = "none";
-  } else {
-    x.style.display = "flex";
-  }
+  const x = document.getElementById("fullScreenDP");
+  x.style.display = x.style.display === "flex" ? "none" : "flex";
 }
 
 function openFullScreenImage(element) {
   changeImageSrc(element.src);
-  var x = document.getElementById("fullScreenDP");
-  if (x.style.display === "flex") {
-    x.style.display = "none";
-  } else {
-    x.style.display = "flex";
-  }
+  const x = document.getElementById("fullScreenDP");
+  x.style.display = x.style.display === "flex" ? "none" : "flex";
 }
 
 function changeImageSrc(newSrc) {
@@ -108,54 +122,46 @@ function changeImageSrc(newSrc) {
 }
 
 function sendResponseMessage(textToSend) {
-  var date = new Date();
-  var myLI = document.createElement("li");
-  var myDiv = document.createElement("div");
-  var greendiv = document.createElement("div");
-  var dateLabel = document.createElement("label");
-  dateLabel.setAttribute("id", "sentlabel");
-  dateLabel.id = "sentlabel";
+  const date = new Date();
+  const myLI = document.createElement("li");
+  const myDiv = document.createElement("div");
+  const greendiv = document.createElement("div");
+  const dateLabel = document.createElement("label");
+  dateLabel.className = "dateLabel";
   dateLabel.innerText = date.toLocaleString("en-US", {
     hour: "numeric",
     minute: "numeric",
     hour12: true,
   });
-  myDiv.setAttribute("class", "received");
-  greendiv.setAttribute("class", "grey");
+  myDiv.className = "received";
+  greendiv.className = "grey";
   greendiv.innerHTML = textToSend;
   myDiv.appendChild(greendiv);
   myLI.appendChild(myDiv);
   greendiv.appendChild(dateLabel);
   document.getElementById("listUL").appendChild(myLI);
-
-  setTimeout(setLastSeen, 500);
+  setLastSeen();
 }
 
 function sendMsg(input) {
-  console.log(input);
-  if (input.value == "") {
-    return;
-  }
-  var date = new Date();
-  var myLI = document.createElement("li");
-  var myDiv = document.createElement("div");
-  var greendiv = document.createElement("div");
-  var dateLabel = document.createElement("label");
+  const date = new Date();
+  const myLI = document.createElement("li");
+  const myDiv = document.createElement("div");
+  const greendiv = document.createElement("div");
+  const dateLabel = document.createElement("label");
+  dateLabel.className = "dateLabel";
   dateLabel.innerText = date.toLocaleString("en-US", {
     hour: "numeric",
     minute: "numeric",
     hour12: true,
   });
-  myDiv.setAttribute("class", "sent");
-  greendiv.setAttribute("class", "green");
-  dateLabel.setAttribute("class", "dateLabel");
-  greendiv.innerText = input.value;
+  myDiv.className = "sent";
+  greendiv.className = "green";
+  greendiv.innerText = input;
   myDiv.appendChild(greendiv);
   myLI.appendChild(myDiv);
   greendiv.appendChild(dateLabel);
   document.getElementById("listUL").appendChild(myLI);
-  var s = document.getElementById("chatting");
-  s.scrollTop = s.scrollHeight;
 }
 
 window.onload = function () {
