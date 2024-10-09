@@ -44,25 +44,51 @@ function onLoad() {
       }
 
       function nextStep() {
-        if (currentStep < data.length) {
-          const step = data[currentStep];
-          if (step.message) {
-            step.message.forEach((msg, idx) => {
-              displayMessage(step, msg, idx, step.message.length);
-            });
-          }
-          if (step.image) {
-            step.image.forEach((imgUrl, idx) => {
-              setTimeout(() => {
-                sendResponseMessage(`<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`);
-                if (idx + 1 === step.image.length && step.buttons) {
-                  displayButtons(step.buttons);
-                }
-              }, (idx + 1) * 1500);
-            });
-          }
-        }
+  if (currentStep < data.length) {
+    const step = data[currentStep];
+    
+    // Check if the message is user-initiated
+    if (step.userInitiated) {
+      if (step.message) {
+        step.message.forEach((msg, idx) => {
+          setTimeout(() => {
+            sendMsg(msg); // User sends the message
+            if (idx + 1 === step.message.length && step.buttons) {
+              displayButtons(step.buttons); // Show buttons after user message
+            }
+          }, 1500);
+        });
       }
+      if (step.image) {
+        step.image.forEach((imgUrl, idx) => {
+          setTimeout(() => {
+            sendMsg(`<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`); // User sends the image
+            if (idx + 1 === step.image.length && step.buttons) {
+              displayButtons(step.buttons); // Show buttons after user image
+            }
+          }, (idx + 1) * 1500);
+        });
+      }
+    } else {
+      // Regular response from Niranjana
+      if (step.message) {
+        step.message.forEach((msg, idx) => {
+          setTimeout(() => {
+            displayMessage(step, msg, idx, step.message.length);
+          }, (idx + 1) * 1500);
+        });
+      }
+      if (step.image) {
+        step.image.forEach((imgUrl, idx) => {
+          setTimeout(() => {
+            displayMessage(step, `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`, idx, step.image.length);
+          }, (idx + 1) * 1500);
+        });
+      }
+    }
+  }
+}
+
 
       console.log("Started Conversation");
       nextStep(); // Start the conversation
