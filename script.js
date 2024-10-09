@@ -19,7 +19,7 @@ function onLoad() {
           if (step.image) {
             step.image.forEach((imgUrl) => {
                sendMsg(
-          `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`
+          `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;block; overflow: hidden;'>`
         );
             });
           } else {
