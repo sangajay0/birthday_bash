@@ -18,9 +18,9 @@ function onLoad() {
           // Check if message is an image or text
           if (step.image) {
             step.image.forEach((imgUrl) => {
-              sendMsg(
-                `<img src='dp.png' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`
-              );
+               sendMsg(
+          `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`
+        );
             });
           } else {
             sendResponseMessage(message);
