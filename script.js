@@ -70,6 +70,12 @@ function displayButtons(buttons) {
       if (step.buttons) {
         displayButtons(step.buttons);
       }
+      // Check for images right after displaying buttons
+      if (step.image) {
+        step.image.forEach((imgUrl) => {
+          displayMessage(step, `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto;'>`, 0, 1);
+        });
+      }
     } else {
       // Automatic response from Niranjana
       if (step.message) {
@@ -83,6 +89,7 @@ function displayButtons(buttons) {
           }, (idx + 1) * 1500);
         });
       }
+      // Automatic image handling (if not user-initiated)
       if (step.image) {
         step.image.forEach((imgUrl, idx) => {
           setTimeout(() => {
@@ -97,6 +104,7 @@ function displayButtons(buttons) {
     }
   }
 }
+
 
 
 
