@@ -34,25 +34,32 @@ function onLoad() {
 
       // Function to display buttons
       function displayButtons(buttons) {
-        buttonsContainer.innerHTML = "";
-        buttons.forEach((button) => {
-          const buttonElement = document.createElement("button");
-          buttonElement.className = "message-button";
-          buttonElement.textContent = button.text;
-          buttonElement.addEventListener("click", () => {
-            currentStep = button.next;
+    buttonsContainer.innerHTML = "";
+    buttons.forEach((button) => {
+        const buttonElement = document.createElement("button");
+        buttonElement.className = "message-button";
+        buttonElement.textContent = button.text;
+        
+        // Add click event for buttons
+        buttonElement.addEventListener("click", () => {
+            currentStep = button.next; // Move to the next step
+            const step = data[currentStep - 1]; // Get the next step
 
-            // Get the current step from data
-            const step = data[currentStep - 1];
-            if (step.userInitiated) {
-              sendMsg(button.text); // Send text if the user initiated
+            // Check if the button action is to view an image
+            if (button.text === "View Image" && step.image) {
+                step.image.forEach((imgUrl) => {
+                    openFullScreenImage(imgUrl); // Open the image directly
+                });
+            } else if (step.userInitiated) {
+                sendMsg(button.text); // Send text if the user initiated
             }
 
-            nextStep();
-          });
-          buttonsContainer.appendChild(buttonElement);
+            nextStep(); // Proceed to the next step
         });
-      }
+
+        buttonsContainer.appendChild(buttonElement);
+    });
+}
 
       function hideButtons() {
         buttonsContainer.innerHTML = "";
@@ -136,11 +143,12 @@ function closeFullImage() {
   x.style.display = x.style.display === "flex" ? "none" : "flex";
 }
 
-function openFullScreenImage(element) {
-  changeImageSrc(element.src);
-  const x = document.getElementById("fullScreenDP");
-  x.style.display = "flex"; // Open the fullscreen image
+function openFullScreenImage(imgUrl) {
+    changeImageSrc(imgUrl); // Change the source of the image to the clicked one
+    const x = document.getElementById("fullScreenDP");
+    x.style.display = "flex"; // Open the fullscreen image
 }
+
 
 function changeImageSrc(newSrc) {
   const imgElement = document.getElementById("dpImage");
