@@ -14,7 +14,7 @@
   },
   {
     "userInitiated": true,
-    "image": ["background.png"],
+    "image": ["dp.png"],
     "buttons": [
       {
         "text": "View Image",
