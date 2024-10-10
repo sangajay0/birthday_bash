@@ -1,6 +1,4 @@
-
 function onLoad() {
-    // Initialize the page
     console.log("Page loaded");
     setLastSeen();
 
@@ -32,7 +30,6 @@ function onLoad() {
                 }, 1500);
             }
 
-            // Function to display buttons
             function displayButtons(buttons) {
                 buttonsContainer.innerHTML = "";
                 buttons.forEach((button) => {
@@ -150,30 +147,28 @@ function changeImageSrc(newSrc) {
     }
 }
 
-// Consolidated send message function
 function sendMessage(textToSend, type = 'received') {
     const date = new Date();
     const myLI = document.createElement("li");
     const myDiv = document.createElement("div");
     const greendiv = document.createElement("div");
     const dateLabel = document.createElement("label");
-  
+
     dateLabel.className = "dateLabel";
     dateLabel.innerText = date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
-  
+
     myDiv.className = type === 'sent' ? "sent" : "received";
     greendiv.className = type === 'sent' ? "green" : "grey";
     greendiv.innerHTML = textToSend; // Use innerHTML to support HTML content
-  
+
     myDiv.appendChild(greendiv);
     myLI.appendChild(myDiv);
     greendiv.appendChild(dateLabel);
     document.getElementById("listUL").appendChild(myLI);
-  
+
     setLastSeen();
 }
 
-// Specific functions for sending messages
 function sendResponseMessage(textToSend) {
     sendMessage(textToSend, 'received');
 }
@@ -182,7 +177,6 @@ function sendMsg(input) {
     sendMessage(input, 'sent');
 }
 
-// Initialize the conversation on page load
 window.onload = function () {
     onLoad();
     sendResponseMessage("Welcome to Niranjana's Birthday Bash!");
