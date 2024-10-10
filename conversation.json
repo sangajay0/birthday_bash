@@ -14,7 +14,9 @@
   },
   {
     "userInitiated": true,
-    "image": ["dp.jpg"],
+    "image": [
+    "https://sangajay0.github.io/birthday_bash/dp.jpg"
+  ],
     "buttons": [
       {
         "text": "View Image",
