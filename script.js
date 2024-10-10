@@ -15,10 +15,10 @@ function onLoad() {
     setTyping();
     setTimeout(() => {
         if (step.image) {
-            // Display each image by filename from the root directory
+            console.log("Images array: ", step.image); // Log the images array
             step.image.forEach((imgFileName) => {
                 const imgUrl = `${imgFileName}`;
-                console.log(`Image URL: ${imgUrl}`); // Log the image URL here
+                console.log(`Image URL: ${imgUrl}`); // Log the image URL to the console
                 sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
             });
         } else {
@@ -30,6 +30,7 @@ function onLoad() {
         }
     }, 1500);
 }
+
 
 
 
