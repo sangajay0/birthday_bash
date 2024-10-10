@@ -262,6 +262,19 @@ nav {
   scrollbar-width: 0px;
 }
 
+.fullScreenDP {
+  display: none; /* Hidden by default */
+  position: fixed; /* Cover the entire screen */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+  justify-content: center; /* Center the image */
+  align-items: center; /* Center the image vertically */
+}
+
+
 .closeBTN {
   width: 30px;
   height: 30px;
