@@ -18,6 +18,7 @@ function onLoad() {
             // Display each image by filename from the root directory
             step.image.forEach((imgFileName) => {
                 const imgUrl = `${imgFileName}`;
+                console.log(`Image URL: ${imgUrl}`); // Log the image URL here
                 sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
             });
         } else {
@@ -29,6 +30,7 @@ function onLoad() {
         }
     }, 1500);
 }
+
 
 
             function displayButtons(buttons) {
