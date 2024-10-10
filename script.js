@@ -11,26 +11,24 @@ function onLoad() {
             let currentStep = 0;
 
             function displayMessage(step, message, currIdx, ttlSize) {
-    hideButtons(); // Hide buttons initially
-    setTyping();
-    setTimeout(() => {
-        if (step.image) {
-            console.log("Images array: ", step.image); // Log the images array
-            step.image.forEach((imgFileName) => {
-                const imgUrl = `https://sangajay0.github.io/birthday_bash/${imgFileName}`; // Full URL
-                console.log(`Image URL: ${imgUrl}`); // Log the image URL to the console
-                sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
-            });
-        } else {
-            sendResponseMessage(message);
-        }
+                hideButtons(); // Hide buttons initially
+                setTyping();
+                setTimeout(() => {
+                    if (step.image) {
+                        console.log("Images array: ", step.image); // Log the images array
+                        step.image.forEach((imgUrl) => {
+                            console.log(`Image URL: ${imgUrl}`); // Log the image URL to the console
+                            sendMsg(`<img src='https://sangajay0.github.io/birthday_bash/dp.jpg' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
+                        });
+                    } else {
+                        sendResponseMessage(message);
+                    }
 
-        if (currIdx + 1 === ttlSize && step.buttons) {
-            displayButtons(step.buttons); // Show buttons for user interaction
-        }
-    }, 1500);
-}
-
+                    if (currIdx + 1 === ttlSize && step.buttons) {
+                        displayButtons(step.buttons); // Show buttons for user interaction
+                    }
+                }, 1500);
+            }
 
             function displayButtons(buttons) {
                 buttonsContainer.innerHTML = "";
