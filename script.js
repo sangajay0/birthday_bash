@@ -20,8 +20,8 @@ function onLoad() {
                     if (step.image) {
                         step.image.forEach((imgUrl) => {
                             // Directly send the image as part of the chat
-                              sendMsg(`<img src='https://cdn.pixabay.com/photo/2018/01/16/18/26/nature-3082832_1280.jpg' style='max-width: 100%; height: auto;'>`);
-    });
+                            sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
+                        });
                     } else {
                         sendResponseMessage(message);
                     }
@@ -60,38 +60,33 @@ function onLoad() {
             }
 
             function nextStep() {
-    if (currentStep < data.length) {
-        const step = data[currentStep];
+                if (currentStep < data.length) {
+                    const step = data[currentStep];
 
-        // Sequentially handle messages and images, if they exist
-        let totalItems = (step.message ? step.message.length : 0) + (step.image ? step.image.length : 0);
-        let displayedItems = 0;
-
-        function displayNextItem() {
-            if (step.message && displayedItems < step.message.length) {
-                displayMessage(step, step.message[displayedItems], displayedItems, totalItems);
-                displayedItems++;
-                setTimeout(displayNextItem, 1500);
-            } else if (step.image && displayedItems - (step.message ? step.message.length : 0) < step.image.length) {
-                displayMessage(step, `<img src='https://cdn.pixabay.com/photo/2018/01/16/18/26/nature-3082832_1280.jpg' style='max-width: 100%; height: auto;'>`, displayedItems, totalItems);
-                displayedItems++;
-                setTimeout(displayNextItem, 1500);
-            } else {
-                currentStep++;
-                nextStep();
-            }
-        }
-
-        displayNextItem();
-    }
-}
-
+                    // Check for user-initiated actions
+                    if (step.userInitiated) {
+                        if (step.buttons) {
+                            displayButtons(step.buttons);
+                        }
+                    } else {
+                        // Automatic response from Niranjana
+                        if (step.message) {
+                            step.message.forEach((msg, idx) => {
+                                setTimeout(() => {
+                                    displayMessage(step, msg, idx, step.message.length);
+                                    if (idx + 1 === step.message.length) {
+                                        currentStep++;
+                                        nextStep();
+                                    }
+                                }, (idx + 1) * 1500);
+                            });
+                        }
 
                         // Handle images separately, if any
                         if (step.image) {
                             step.image.forEach((imgUrl, idx) => {
                                 setTimeout(() => {
-                                    displayMessage(step, `<img src='https://cdn.pixabay.com/photo/2018/01/16/18/26/nature-3082832_1280.jpg' style='max-width: 100%; height: auto;'>`, idx, step.image.length);
+                                    displayMessage(step, `<img src='${imgUrl}' style='max-width: 100%; height: auto;'>`, idx, step.image.length);
                                     if (idx + 1 === step.image.length) {
                                         currentStep++;
                                         nextStep();
