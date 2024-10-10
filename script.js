@@ -20,8 +20,8 @@ function onLoad() {
                     if (step.image) {
                         step.image.forEach((imgUrl) => {
                             // Directly send the image as part of the chat
-                            sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
-                        });
+                              sendMsg(`<img src='https://cdn.pixabay.com/photo/2018/01/16/18/26/nature-3082832_1280.jpg' style='max-width: 100%; height: auto;'>`);
+    });
                     } else {
                         sendResponseMessage(message);
                     }
@@ -86,7 +86,7 @@ function onLoad() {
                         if (step.image) {
                             step.image.forEach((imgUrl, idx) => {
                                 setTimeout(() => {
-                                    displayMessage(step, `<img src='${imgUrl}' style='max-width: 100%; height: auto;'>`, idx, step.image.length);
+                                    displayMessage(step, `<img src='https://cdn.pixabay.com/photo/2018/01/16/18/26/nature-3082832_1280.jpg' style='max-width: 100%; height: auto;'>`, idx, step.image.length);
                                     if (idx + 1 === step.image.length) {
                                         currentStep++;
                                         nextStep();
