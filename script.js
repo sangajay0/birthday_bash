@@ -11,24 +11,25 @@ function onLoad() {
             let currentStep = 0;
 
             function displayMessage(step, message, currIdx, ttlSize) {
-                hideButtons(); // Hide buttons initially
-                setTyping();
-                setTimeout(() => {
-                    // Check if message is an image or text
-                    if (step.image) {
-                        step.image.forEach((imgUrl) => {
-                            // Directly send the image as part of the chat
-                            sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
-                        });
-                    } else {
-                        sendResponseMessage(message);
-                    }
+    hideButtons(); // Hide buttons initially
+    setTyping();
+    setTimeout(() => {
+        if (step.image) {
+            // Display each image by filename from the root directory
+            step.image.forEach((imgFileName) => {
+                const imgUrl = `${imgFileName}`;
+                sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
+            });
+        } else {
+            sendResponseMessage(message);
+        }
 
-                    if (currIdx + 1 === ttlSize && step.buttons) {
-                        displayButtons(step.buttons); // Show buttons for user interaction
-                    }
-                }, 1500);
-            }
+        if (currIdx + 1 === ttlSize && step.buttons) {
+            displayButtons(step.buttons); // Show buttons for user interaction
+        }
+    }, 1500);
+}
+
 
             function displayButtons(buttons) {
                 buttonsContainer.innerHTML = "";
