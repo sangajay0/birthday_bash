@@ -16,8 +16,7 @@ function onLoad() {
     setTimeout(() => {
         if (step.image) {
             console.log("Images array: ", step.image); // Log the images array
-            step.image.forEach((imgFileName) => {
-                const imgUrl = `${imgFileName}`;
+            step.image.forEach((imgUrl) => {
                 console.log(`Image URL: ${imgUrl}`); // Log the image URL to the console
                 sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
             });
@@ -30,6 +29,7 @@ function onLoad() {
         }
     }, 1500);
 }
+
 
 
 
