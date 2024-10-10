@@ -15,11 +15,9 @@ function onLoad() {
                 hideButtons(); // Hide buttons initially
                 setTyping();
                 setTimeout(() => {
-                    // Check if message is an image or text
                     if (step.image) {
                         step.image.forEach((imgUrl) => {
-                            // Directly send the image as part of the chat
-                            sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
+                            sendResponseMessage(`<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto; margin-top: 10px; cursor: pointer;'>`);
                         });
                     } else {
                         sendResponseMessage(message);
@@ -31,7 +29,6 @@ function onLoad() {
                 }, 1500);
             }
 
-            // Function to display buttons
             function displayButtons(buttons) {
                 buttonsContainer.innerHTML = "";
                 buttons.forEach((button) => {
@@ -40,14 +37,14 @@ function onLoad() {
                     buttonElement.textContent = button.text;
 
                     buttonElement.addEventListener("click", () => {
-                        currentStep = button.next; // Move to the next step
-                        const step = data[currentStep - 1]; // Get the next step
+                        currentStep = button.next;
+                        const step = data[currentStep - 1];
 
                         if (step.userInitiated) {
-                            sendMsg(button.text); // Send text if the user initiated
+                            sendMsg(button.text);
                         }
 
-                        nextStep(); // Proceed to the next step
+                        nextStep();
                     });
 
                     buttonsContainer.appendChild(buttonElement);
@@ -62,13 +59,11 @@ function onLoad() {
                 if (currentStep < data.length) {
                     const step = data[currentStep];
 
-                    // Check for user-initiated actions
                     if (step.userInitiated) {
                         if (step.buttons) {
                             displayButtons(step.buttons);
                         }
                     } else {
-                        // Automatic response from Niranjana
                         if (step.message) {
                             step.message.forEach((msg, idx) => {
                                 setTimeout(() => {
@@ -81,11 +76,10 @@ function onLoad() {
                             });
                         }
 
-                        // Handle images separately, if any
                         if (step.image) {
                             step.image.forEach((imgUrl, idx) => {
                                 setTimeout(() => {
-                                    displayMessage(step, `<img src='${imgUrl}' style='max-width: 100%; height: auto;'>`, idx, step.image.length);
+                                    displayMessage(step, `<img src='${imgUrl}' onclick='openFullScreenImage(this)' style='max-width: 100%; height: auto; cursor: pointer;'>`, idx, step.image.length);
                                     if (idx + 1 === step.image.length) {
                                         currentStep++;
                                         nextStep();
@@ -98,48 +92,17 @@ function onLoad() {
             }
 
             console.log("Started Conversation");
-            nextStep(); // Start the conversation
+            nextStep();
         })
         .catch((error) => {
             console.error("Error loading JSON data:", error);
         });
 }
 
-function isMobileDevice() {
-    const mobilePattern = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-    return mobilePattern.test(navigator.userAgent);
-}
-
-function blockNonMobileDevices() {
-    if (!isMobileDevice()) {
-        window.location.href = "/error.html";
-    }
-}
-
-function delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function setTyping() {
-    const lastSeen = document.getElementById("lastseen");
-    lastSeen.innerText = "typing...";
-}
-
-function setLastSeen() {
-    const date = new Date();
-    const lastSeen = document.getElementById("lastseen");
-    lastSeen.innerText = "last seen today at " + date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
-}
-
-function closeFullImage() {
-    const x = document.getElementById("fullScreenDP");
-    x.style.display = x.style.display === "flex" ? "none" : "flex";
-}
-
 function openFullScreenImage(element) {
     changeImageSrc(element.src);
     const x = document.getElementById("fullScreenDP");
-    x.style.display = "flex"; // Open the fullscreen image
+    x.style.display = "flex";
 }
 
 function changeImageSrc(newSrc) {
@@ -149,7 +112,7 @@ function changeImageSrc(newSrc) {
     }
 }
 
-// Consolidated send message function
+// Modified sendMessage to add images
 function sendMessage(textToSend, type = 'received') {
     const date = new Date();
     const myLI = document.createElement("li");
@@ -162,7 +125,7 @@ function sendMessage(textToSend, type = 'received') {
   
     myDiv.className = type === 'sent' ? "sent" : "received";
     greendiv.className = type === 'sent' ? "green" : "grey";
-    greendiv.innerHTML = textToSend; // Use innerHTML to support HTML content
+    greendiv.innerHTML = textToSend;
   
     myDiv.appendChild(greendiv);
     myLI.appendChild(myDiv);
@@ -172,7 +135,6 @@ function sendMessage(textToSend, type = 'received') {
     setLastSeen();
 }
 
-// Specific functions for sending messages
 function sendResponseMessage(textToSend) {
     sendMessage(textToSend, 'received');
 }
@@ -181,7 +143,6 @@ function sendMsg(input) {
     sendMessage(input, 'sent');
 }
 
-// Initialize the conversation on page load
 window.onload = function () {
     onLoad();
     sendResponseMessage("Welcome to Niranjana's Birthday Bash!");
