@@ -18,7 +18,7 @@ function onLoad() {
     console.log("Images array: ", step.image); // Log the images array
     step.image.forEach((imgUrl) => {
         console.log(`Image URL: ${imgUrl}`); // Log the image URL to the console
-        sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
+        sendMsg(`<img src='https://raw.githubusercontent.com/sangajay0/birthday_bash/refs/heads/main/nir.jpg' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
     });
 } else {
     sendResponseMessage(message);
