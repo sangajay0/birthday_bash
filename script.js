@@ -21,7 +21,7 @@ function onLoad() {
         sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
     });
 } else {
-    sendResponseMessage(message);
+    sendMsg(`<img src='' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
 }
 
                     if (currIdx + 1 === ttlSize && step.buttons) {
