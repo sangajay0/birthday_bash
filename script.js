@@ -21,7 +21,7 @@ function onLoad() {
         sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
     });
 } else {
-    sendMsg(`<img src='https://github.com/sangajay0/birthday_bash/blob/main/nir.jpg' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
+    sendMsg(`<img src='https://raw.githubusercontent.com/sangajay0/birthday_bash/refs/heads/main/nir.jpg ' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
 }
 
                     if (currIdx + 1 === ttlSize && step.buttons) {
