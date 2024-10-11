@@ -15,14 +15,14 @@ function onLoad() {
                 setTyping();
                 setTimeout(() => {
                     if (step.image) {
-                        console.log("Images array: ", step.image); // Log the images array
-                        step.image.forEach((imgUrl) => {
-                            console.log(`Image URL: ${imgUrl}`); // Log the image URL to the console
-                            sendMsg(`<img src='https://sangajay0.github.io/birthday_bash/dp.jpg' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
-                        });
-                    } else {
-                        sendResponseMessage(message);
-                    }
+    console.log("Images array: ", step.image); // Log the images array
+    step.image.forEach((imgUrl) => {
+        console.log(`Image URL: ${imgUrl}`); // Log the image URL to the console
+        sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
+    });
+} else {
+    sendResponseMessage(message);
+}
 
                     if (currIdx + 1 === ttlSize && step.buttons) {
                         displayButtons(step.buttons); // Show buttons for user interaction
