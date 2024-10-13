@@ -14,15 +14,7 @@ function onLoad() {
                 hideButtons(); // Hide buttons initially
                 setTyping();
                 setTimeout(() => {
-                    if (step.image) {
-    console.log("Images array: ", step.image); // Log the images array
-    step.image.forEach((imgUrl) => {
-        console.log(`Image URL: ${imgUrl}`); // Log the image URL to the console
-        sendMsg(`<img src='https://raw.githubusercontent.com/sangajay0/birthday_bash/refs/heads/main/nir.jpg' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
-    });
-} else {
-    sendResponseMessage(message);
-}
+                    sendResponseMessage(message); // Always send the message
 
                     if (currIdx + 1 === ttlSize && step.buttons) {
                         displayButtons(step.buttons); // Show buttons for user interaction
@@ -43,6 +35,13 @@ function onLoad() {
 
                         if (step.userInitiated) {
                             sendMsg(button.text); // Send text if the user initiated
+                        }
+
+                        // If the step contains an image, display it
+                        if (step.image) {
+                            step.image.forEach((imgUrl) => {
+                                sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
+                            });
                         }
 
                         nextStep(); // Proceed to the next step
@@ -75,17 +74,6 @@ function onLoad() {
                                         currentStep++;
                                         nextStep();
                                     }
-                                }, (idx + 1) * 1500);
-                            });
-                        }
-
-                        // Handle images separately, if any
-                        if (step.image) {
-                            step.image.forEach((imgUrl, idx) => {
-                                setTimeout(() => {
-                                    sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto;'>`);
-                                    currentStep++;
-                                    nextStep();
                                 }, (idx + 1) * 1500);
                             });
                         }
