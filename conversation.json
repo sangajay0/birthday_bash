@@ -1,10 +1,10 @@
 [
   {
     "userInitiated": true,
-    "message": ["Hey bestie, happy birthday"],
+    "message": ["Hey meggi, happy birthday"],
     "buttons": [
       {
-        "text": "Hey bestie, happy birthday",
+        "text": "Hey meggi, happy birthday",
         "next": 1
       }
     ]
