@@ -25,5 +25,48 @@
   },
   {
     "message": ["Thank you so much"]
+  },
+  {
+    "userInitiated": true,
+    "message": ["How are you doing today?"],
+    "buttons": [
+      {
+        "text": "I'm doing great!",
+        "next": 4
+      },
+      {
+        "text": "Could be better.",
+        "next": 5
+      }
+    ]
+  },
+  {
+    "message": ["That's wonderful to hear!"],
+    "image": ["https://example.com/happy_image.jpg"]
+  },
+  {
+    "message": ["I'm sorry to hear that. Here's a cute cat picture to cheer you up!"],
+    "image": ["https://example.com/cute_cat.jpg"]
+  },
+  {
+    "userInitiated": true,
+    "message": ["Would you like to see more pictures?"],
+    "buttons": [
+      {
+        "text": "Yes, please!",
+        "next": 6
+      },
+      {
+        "text": "No, thank you.",
+        "next": 7
+      }
+    ]
+  },
+  {
+    "message": ["Here are some more pictures!"],
+    "image": ["https://example.com/picture1.jpg", "https://example.com/picture2.jpg"]
+  },
+  {
+    "message": ["Alright, have a great day!"]
   }
 ]
