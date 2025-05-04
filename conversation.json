@@ -4,7 +4,7 @@
     "message": ["Hey bestie, happy birthday"],
     "buttons": [
       {
-        "text": "Hey meggi, happy birthday",
+        "text": "Hey bestie, happy birthday",
         "next": 1
       }
     ]
