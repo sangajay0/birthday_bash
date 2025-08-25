@@ -25,14 +25,18 @@ function setLastSeen() {
 
 /**********************
  * Presence (header status)
+ * Show "online" during typing AND just after sending,
+ * then revert to "last seen". Works for both ends.
  *********************/
-function setPresenceOnline() {
+let presenceTimer = null;
+function goOnline() {
+  if (presenceTimer) clearTimeout(presenceTimer);
   const el = byId("lastseen");
   if (el) el.innerText = "online";
 }
-function setPresenceIdle() {
-  // small delay to feel natural after sending
-  setTimeout(setLastSeen, 350);
+function goIdleSoon(delayMs = 800) {
+  if (presenceTimer) clearTimeout(presenceTimer);
+  presenceTimer = setTimeout(() => setLastSeen(), delayMs);
 }
 
 /**********************
@@ -58,7 +62,7 @@ window.closeFullImage = closeFullImage;
  * Composer (bottom typing)
  *********************/
 function setComposer(html) {
-  const el = document.getElementById("typingtext");
+  const el = byId("typingtext");
   if (!el) return;
   el.innerHTML = html ? html : "";
   scrollToBottom();
@@ -74,40 +78,27 @@ function setComposerTyping(on = true) {
     setComposer("");
   }
 }
-
-// Decide typing duration for dots
 function typingDurationFor(text = "", minMs = 900, maxMs = 2400) {
   const perChar = 40;
   const est = minMs + Math.floor((text.length * perChar) / 4);
   return Math.max(minMs, Math.min(maxMs, est));
 }
-
-/**
- * Show dots for a duration, then clear.
- * actor: 'user' | 'bot'
- * If actor==='user' -> header shows "online" during typing, reverts after.
- */
-async function showTyping(ms = 1200, actor = "bot") {
-  if (actor === "user") setPresenceOnline();
+async function showTyping(ms = 1200) {
+  goOnline();                // online while typing (both ends)
   setComposerTyping(true);
   await sleep(ms);
   setComposerTyping(false);
-  if (actor === "user") setPresenceIdle();
+  // do not go idle yet; let the sender set goIdleSoon() AFTER sending bubble
 }
 
-/* --- Letter-by-letter (typewriter) only for the greeting --- */
+/* --- Letter-by-letter only for the greeting --- */
 const TYPEWRITER_TARGET = "Hey bestie, happy birthday";
 function shouldTypewriter(text) {
   return (text || "").trim().toLowerCase() === TYPEWRITER_TARGET.toLowerCase();
 }
-
-/**
- * Typewriter in composer for specific text.
- * actor: 'user' | 'bot' (we only use 'user' here per requirement)
- */
-async function typeInComposerLetterByLetter(fullText, actor = "bot", charDelay = 45) {
+async function typeInComposerLetterByLetter(fullText, charDelay = 45) {
   if (!fullText) return;
-  if (actor === "user") setPresenceOnline();
+  goOnline();                // online while typing
   setComposer("");
   let html = "";
   for (let i = 0; i < fullText.length; i++) {
@@ -118,7 +109,7 @@ async function typeInComposerLetterByLetter(fullText, actor = "bot", charDelay =
     await sleep(charDelay + extra);
   }
   await sleep(250);
-  if (actor === "user") setPresenceIdle();
+  // don't go idle here; the sender will call goIdleSoon() after sending
 }
 
 /**********************
@@ -145,7 +136,7 @@ function sendMessage(textToSend, type = "received") {
   byId("listUL").appendChild(li);
   bubble.appendChild(dateLabel);
 
-  setLastSeen(); // update idle timestamp after each bubble
+  // Presence: keep "online" during/just after send; caller will schedule goIdleSoon()
   scrollToBottom();
 }
 const sendResponseMessage = (t) => sendMessage(t, "received");
@@ -202,33 +193,37 @@ async function startConversation() {
       el.textContent = btn.text;
 
       el.addEventListener("click", async () => {
-        // USER typing: special case for greeting -> typewriter; others -> dots
+        // USER typing: special greeting -> typewriter; others -> dots
         if (shouldTypewriter(btn.text)) {
-          await typeInComposerLetterByLetter(btn.text, "user");
-          setComposer("");
+          await typeInComposerLetterByLetter(btn.text);
         } else {
-          await showTyping(typingDurationFor(btn.text), "user");
+          await showTyping(typingDurationFor(btn.text));
         }
+        // Sending: keep online briefly after
+        goOnline();
         sendMsg(btn.text);
+        goIdleSoon(900);
+
         hideButtons();
 
-        // Move to destination step and render images first if any
+        // Destination step (if has images, show as SENT/right side)
         currentStep = btn.next;
         const step = steps[currentStep];
-
         if (step && step.image) {
-          // images after a user action -> still show dots, but bot presence remains last-seen
-          await showTyping(1100, "bot");
+          await showTyping(900); // quick dots while we "prepare" image
           for (const raw of step.image) {
             const url = await ensureImageLoads(raw);
             if (url) {
+              goOnline();
               sendMessage(
                 `<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`,
-                "sent"
+                "sent" // 👉 force right side for shared images
               );
+              goIdleSoon(900);
             }
           }
         }
+
         await nextStep();
       });
 
@@ -238,32 +233,32 @@ async function startConversation() {
   }
 
   async function handleNewFormatStep(step) {
+    // step.message: [{from:'user'|'bot', text?, image?}, ...]
     for (const item of step.message) {
       if (item.text) {
-        if (item.from === "user" && shouldTypewriter(item.text)) {
-          await typeInComposerLetterByLetter(item.text, "user");
-          setComposer("");
-        } else if (item.from === "user") {
-          await showTyping(typingDurationFor(item.text), "user");
+        if (shouldTypewriter(item.text) && (item.from || "").toLowerCase() === "user") {
+          await typeInComposerLetterByLetter(item.text);
         } else {
-          // bot
-          await showTyping(typingDurationFor(item.text), "bot");
+          await showTyping(typingDurationFor(item.text));
         }
-        const side = item.from === "user" ? "sent" : "received";
+        // Send bubble on correct side; keep online briefly after sending
+        const side = (item.from || "").toLowerCase() === "user" ? "sent" : "received";
+        goOnline();
         sendMessage(item.text, side);
+        goIdleSoon(900);
         await sleep(350);
       }
       if (item.image) {
-        // typing dots while loading image — keep bot presence for auto images
-        const actor = item.from === "user" ? "user" : "bot";
-        await showTyping(1100, actor);
+        // Always treat images as SHARED by "us" → show on right side
+        await showTyping(900);
         const url = await ensureImageLoads(item.image);
         if (url) {
-          const side = item.from === "user" ? "sent" : "received";
+          goOnline();
           sendMessage(
             `<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`,
-            side
+            "sent" // 👉 force right side
           );
+          goIdleSoon(900);
           await sleep(250);
         }
       }
@@ -271,30 +266,30 @@ async function startConversation() {
   }
 
   async function handleOldFormatStep(step) {
+    // Old format images → also right side
     if (step.image) {
-      await showTyping(1100, "bot");
+      await showTyping(900);
       for (const raw of step.image) {
         const url = await ensureImageLoads(raw);
         if (url) {
+          goOnline();
           sendMessage(
             `<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`,
-            "sent"
+            "sent" // 👉 force right side
           );
+          goIdleSoon(900);
         }
       }
       await sleep(200);
     }
 
+    // Old format auto messages (bot): dots typing then received bubble
     if (Array.isArray(step.message)) {
       for (const msg of step.message) {
-        // old-format auto messages are bot messages
-        if (shouldTypewriter(msg)) {
-          // if you ever add the greeting here as bot, keep it dots instead:
-          await showTyping(typingDurationFor(msg), "bot");
-        } else {
-          await showTyping(typingDurationFor(msg), "bot");
-        }
+        await showTyping(typingDurationFor(msg));
+        goOnline();
         sendResponseMessage(msg);
+        goIdleSoon(900);
         await sleep(350);
       }
     }
@@ -309,6 +304,7 @@ async function startConversation() {
     const step = steps[currentStep];
     if (!step) return;
 
+    // NEW format?
     if (
       Array.isArray(step.message) &&
       step.message.length &&
@@ -320,6 +316,7 @@ async function startConversation() {
       return nextStep();
     }
 
+    // OLD format
     if (step.userInitiated) {
       if (step.buttons) showButtons(step.buttons);
       return;
