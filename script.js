@@ -24,6 +24,18 @@ function setLastSeen() {
 }
 
 /**********************
+ * Presence (header status)
+ *********************/
+function setPresenceOnline() {
+  const el = byId("lastseen");
+  if (el) el.innerText = "online";
+}
+function setPresenceIdle() {
+  // small delay to feel natural after sending
+  setTimeout(setLastSeen, 350);
+}
+
+/**********************
  * Fullscreen DP
  *********************/
 function openFullScreenImage(el) {
@@ -62,24 +74,40 @@ function setComposerTyping(on = true) {
     setComposer("");
   }
 }
+
+// Decide typing duration for dots
 function typingDurationFor(text = "", minMs = 900, maxMs = 2400) {
   const perChar = 40;
   const est = minMs + Math.floor((text.length * perChar) / 4);
   return Math.max(minMs, Math.min(maxMs, est));
 }
-async function showTyping(ms = 1200) {
+
+/**
+ * Show dots for a duration, then clear.
+ * actor: 'user' | 'bot'
+ * If actor==='user' -> header shows "online" during typing, reverts after.
+ */
+async function showTyping(ms = 1200, actor = "bot") {
+  if (actor === "user") setPresenceOnline();
   setComposerTyping(true);
   await sleep(ms);
   setComposerTyping(false);
+  if (actor === "user") setPresenceIdle();
 }
 
-/* --- Letter-by-letter (typewriter) just for the greeting --- */
+/* --- Letter-by-letter (typewriter) only for the greeting --- */
 const TYPEWRITER_TARGET = "Hey bestie, happy birthday";
 function shouldTypewriter(text) {
   return (text || "").trim().toLowerCase() === TYPEWRITER_TARGET.toLowerCase();
 }
-async function typeInComposerLetterByLetter(fullText, charDelay = 45) {
+
+/**
+ * Typewriter in composer for specific text.
+ * actor: 'user' | 'bot' (we only use 'user' here per requirement)
+ */
+async function typeInComposerLetterByLetter(fullText, actor = "bot", charDelay = 45) {
   if (!fullText) return;
+  if (actor === "user") setPresenceOnline();
   setComposer("");
   let html = "";
   for (let i = 0; i < fullText.length; i++) {
@@ -90,6 +118,7 @@ async function typeInComposerLetterByLetter(fullText, charDelay = 45) {
     await sleep(charDelay + extra);
   }
   await sleep(250);
+  if (actor === "user") setPresenceIdle();
 }
 
 /**********************
@@ -116,7 +145,7 @@ function sendMessage(textToSend, type = "received") {
   byId("listUL").appendChild(li);
   bubble.appendChild(dateLabel);
 
-  setLastSeen();
+  setLastSeen(); // update idle timestamp after each bubble
   scrollToBottom();
 }
 const sendResponseMessage = (t) => sendMessage(t, "received");
@@ -173,12 +202,12 @@ async function startConversation() {
       el.textContent = btn.text;
 
       el.addEventListener("click", async () => {
-        // SPECIAL: first greeting gets letter-by-letter, others use dots
+        // USER typing: special case for greeting -> typewriter; others -> dots
         if (shouldTypewriter(btn.text)) {
-          await typeInComposerLetterByLetter(btn.text);
+          await typeInComposerLetterByLetter(btn.text, "user");
           setComposer("");
         } else {
-          await showTyping(typingDurationFor(btn.text));
+          await showTyping(typingDurationFor(btn.text), "user");
         }
         sendMsg(btn.text);
         hideButtons();
@@ -188,7 +217,8 @@ async function startConversation() {
         const step = steps[currentStep];
 
         if (step && step.image) {
-          await showTyping(1100); // dots while loading
+          // images after a user action -> still show dots, but bot presence remains last-seen
+          await showTyping(1100, "bot");
           for (const raw of step.image) {
             const url = await ensureImageLoads(raw);
             if (url) {
@@ -210,24 +240,29 @@ async function startConversation() {
   async function handleNewFormatStep(step) {
     for (const item of step.message) {
       if (item.text) {
-        if (shouldTypewriter(item.text)) {
-          await typeInComposerLetterByLetter(item.text);
+        if (item.from === "user" && shouldTypewriter(item.text)) {
+          await typeInComposerLetterByLetter(item.text, "user");
           setComposer("");
+        } else if (item.from === "user") {
+          await showTyping(typingDurationFor(item.text), "user");
         } else {
-          await showTyping(typingDurationFor(item.text));
+          // bot
+          await showTyping(typingDurationFor(item.text), "bot");
         }
         const side = item.from === "user" ? "sent" : "received";
         sendMessage(item.text, side);
         await sleep(350);
       }
       if (item.image) {
-        await showTyping(1100);
+        // typing dots while loading image — keep bot presence for auto images
+        const actor = item.from === "user" ? "user" : "bot";
+        await showTyping(1100, actor);
         const url = await ensureImageLoads(item.image);
         if (url) {
-          // Show image as 'sent' (change to 'received' if you prefer)
+          const side = item.from === "user" ? "sent" : "received";
           sendMessage(
             `<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`,
-            "sent"
+            side
           );
           await sleep(250);
         }
@@ -237,7 +272,7 @@ async function startConversation() {
 
   async function handleOldFormatStep(step) {
     if (step.image) {
-      await showTyping(1100);
+      await showTyping(1100, "bot");
       for (const raw of step.image) {
         const url = await ensureImageLoads(raw);
         if (url) {
@@ -252,11 +287,12 @@ async function startConversation() {
 
     if (Array.isArray(step.message)) {
       for (const msg of step.message) {
+        // old-format auto messages are bot messages
         if (shouldTypewriter(msg)) {
-          await typeInComposerLetterByLetter(msg);
-          setComposer("");
+          // if you ever add the greeting here as bot, keep it dots instead:
+          await showTyping(typingDurationFor(msg), "bot");
         } else {
-          await showTyping(typingDurationFor(msg));
+          await showTyping(typingDurationFor(msg), "bot");
         }
         sendResponseMessage(msg);
         await sleep(350);
