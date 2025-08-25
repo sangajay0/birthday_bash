@@ -1,29 +1,22 @@
 [
   {
-    "userInitiated": true,
-    "message": ["Hey bestie, happy birthday"],
-    "buttons": [
-      {
-        "text": "Hey bestie, happy birthday",
-        "next": 1
-      }
+    "message": [
+      { "from": "user", "text": "Hey bestie, happy birthday" }
     ]
   },
   {
-    "message": ["Thank you"]
-  },
-  {
-    "userInitiated": true,
-    "image": [ "https://raw.githubusercontent.com/sangajay0/birthday_bash/refs/heads/main/ni.png"
-  ],
-    "buttons": [
-      {
-        "text": "View Image",
-        "next": 3
-      }
+    "message": [
+      { "from": "bot", "text": "Thank you" }
     ]
   },
   {
-    "message": ["Thank you so much"]
+    "message": [
+      { "from": "bot", "image": "https://raw.githubusercontent.com/sangajay0/birthday_bash/main/ni.png" }
+    ]
+  },
+  {
+    "message": [
+      { "from": "bot", "text": "Thank you so much" }
+    ]
   }
 ]
