@@ -43,20 +43,16 @@ window.openFullScreenImage = openFullScreenImage;
 window.closeFullImage = closeFullImage;
 
 /**********************
- * Composer (typing section)
- * WhatsApp-style dots indicator
+ * Composer (bottom typing)
  *********************/
 function setComposer(html) {
   const el = document.getElementById("typingtext");
   if (!el) return;
-  if (html === null || html === undefined || html === "") {
-    el.innerHTML = "";
-  } else {
-    el.innerHTML = html; // allow HTML for dots
-  }
+  el.innerHTML = html ? html : "";
   scrollToBottom();
 }
 
+/* --- WhatsApp-like typing dots --- */
 function setComposerTyping(on = true) {
   if (on) {
     setComposer(
@@ -66,19 +62,34 @@ function setComposerTyping(on = true) {
     setComposer("");
   }
 }
-
 function typingDurationFor(text = "", minMs = 900, maxMs = 2400) {
-  // scale a bit with length, but cap
   const perChar = 40;
   const est = minMs + Math.floor((text.length * perChar) / 4);
   return Math.max(minMs, Math.min(maxMs, est));
 }
-
-// Show dots for a duration, then clear
 async function showTyping(ms = 1200) {
   setComposerTyping(true);
   await sleep(ms);
   setComposerTyping(false);
+}
+
+/* --- Letter-by-letter (typewriter) just for the greeting --- */
+const TYPEWRITER_TARGET = "Hey bestie, happy birthday";
+function shouldTypewriter(text) {
+  return (text || "").trim().toLowerCase() === TYPEWRITER_TARGET.toLowerCase();
+}
+async function typeInComposerLetterByLetter(fullText, charDelay = 45) {
+  if (!fullText) return;
+  setComposer("");
+  let html = "";
+  for (let i = 0; i < fullText.length; i++) {
+    const ch = fullText[i];
+    html += ch === "<" ? "&lt;" : ch === ">" ? "&gt;" : ch; // basic safety
+    setComposer(html);
+    const extra = /[,.!?… ]/.test(ch) ? 55 : 0;
+    await sleep(charDelay + extra);
+  }
+  await sleep(250);
 }
 
 /**********************
@@ -108,7 +119,6 @@ function sendMessage(textToSend, type = "received") {
   setLastSeen();
   scrollToBottom();
 }
-
 const sendResponseMessage = (t) => sendMessage(t, "received");
 const sendMsg = (t) => sendMessage(t, "sent");
 
@@ -116,7 +126,6 @@ const sendMsg = (t) => sendMessage(t, "sent");
  * Image helpers
  *********************/
 function normalizeGithubRaw(src) {
-  // Accept both good and "refs/heads/main" forms
   return src.replace("refs/heads/main/", "main/");
 }
 function ensureImageLoads(src) {
@@ -134,11 +143,7 @@ function ensureImageLoads(src) {
 
 /**********************
  * Conversation engine
- * Supports:
- *  - NEW format:
- *      { "message": [ { "from":"user"|"bot", "text"?: "...", "image"?: "..." }, ... ] }
- *  - OLD format:
- *      { "userInitiated": true, "buttons":[{text,next}], "image":[...], "message":["..."] }
+ * Supports NEW & OLD formats
  *********************/
 window.onload = () => startConversation();
 
@@ -168,12 +173,17 @@ async function startConversation() {
       el.textContent = btn.text;
 
       el.addEventListener("click", async () => {
-        // Show typing dots for "user", then send user's bubble
-        await showTyping(typingDurationFor(btn.text));
+        // SPECIAL: first greeting gets letter-by-letter, others use dots
+        if (shouldTypewriter(btn.text)) {
+          await typeInComposerLetterByLetter(btn.text);
+          setComposer("");
+        } else {
+          await showTyping(typingDurationFor(btn.text));
+        }
         sendMsg(btn.text);
         hideButtons();
 
-        // Move to destination step (0-based) and render images immediately if any
+        // Move to destination step and render images first if any
         currentStep = btn.next;
         const step = steps[currentStep];
 
@@ -198,10 +208,14 @@ async function startConversation() {
   }
 
   async function handleNewFormatStep(step) {
-    // step.message is array of {from, text?, image?}
     for (const item of step.message) {
       if (item.text) {
-        await showTyping(typingDurationFor(item.text));
+        if (shouldTypewriter(item.text)) {
+          await typeInComposerLetterByLetter(item.text);
+          setComposer("");
+        } else {
+          await showTyping(typingDurationFor(item.text));
+        }
         const side = item.from === "user" ? "sent" : "received";
         sendMessage(item.text, side);
         await sleep(350);
@@ -210,7 +224,7 @@ async function startConversation() {
         await showTyping(1100);
         const url = await ensureImageLoads(item.image);
         if (url) {
-          // Choose side; here we post images as 'sent' to mirror your earlier flow
+          // Show image as 'sent' (change to 'received' if you prefer)
           sendMessage(
             `<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`,
             "sent"
@@ -222,7 +236,6 @@ async function startConversation() {
   }
 
   async function handleOldFormatStep(step) {
-    // Render images if any (before messages)
     if (step.image) {
       await showTyping(1100);
       for (const raw of step.image) {
@@ -237,10 +250,14 @@ async function startConversation() {
       await sleep(200);
     }
 
-    // Auto messages (bot)
     if (Array.isArray(step.message)) {
       for (const msg of step.message) {
-        await showTyping(typingDurationFor(msg));
+        if (shouldTypewriter(msg)) {
+          await typeInComposerLetterByLetter(msg);
+          setComposer("");
+        } else {
+          await showTyping(typingDurationFor(msg));
+        }
         sendResponseMessage(msg);
         await sleep(350);
       }
@@ -256,7 +273,6 @@ async function startConversation() {
     const step = steps[currentStep];
     if (!step) return;
 
-    // NEW format detection: array of objects
     if (
       Array.isArray(step.message) &&
       step.message.length &&
@@ -268,11 +284,8 @@ async function startConversation() {
       return nextStep();
     }
 
-    // OLD format: user-initiated → show buttons, else auto messages
     if (step.userInitiated) {
       if (step.buttons) showButtons(step.buttons);
-      // (Optional) If you want to show step.image even before clicking:
-      // if (step.image) { ... }
       return;
     }
 
