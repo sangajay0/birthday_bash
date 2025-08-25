@@ -5,107 +5,69 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Aishwarya's Birthday Bash</title>
-  <meta name="description" content="Join us in celebrating Aishwarya's birthday on 16 Oct 2024. Be part of the joy and fun! #BirthdayBash" />
-
-  <!-- Fonts & Styles -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Andika" />
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/png" href="favicon.png" />
-
-  <!-- Analytics (optional) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4LWDGQTJF"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-N4LWDGQTJF');
-  </script>
-
-  <!-- App -->
   <script src="script.js" defer></script>
 </head>
 
 <body>
-  <!-- Top bar -->
-  <nav aria-label="Chat header">
-    <div class="navbar">
-      <div class="left">
-        <img class="dpimg" onclick="openFullScreenImage(this)" src="dp.png" alt="Profile picture" />
-        <div class="personalInfo">
-          <label id="name">Aishwarya</label>
-          <label id="lastseen">last seen today at 3:24 pm</label>
-        </div>
+  <!-- Top App Bar -->
+  <nav class="navbar" aria-label="Chat header">
+    <div class="left">
+      <img class="dpimg" onclick="openFullScreenImage(this)" src="dp.png" alt="Profile picture" />
+      <div class="personalInfo">
+        <label id="name">Aishwarya</label>
+        <label id="lastseen">last seen today at 3:24 pm</label>
       </div>
-
-      <!-- Right actions (call / video) -->
-      <div class="actions">
-        <!-- voice call -->
-        <button class="iconbtn" title="Voice call" aria-label="Voice call">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-            <path fill="currentColor" d="M6.62 10.79a15.53 15.53 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.11.37 2.31.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 3 13.6 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.27.2 2.47.57 3.58a1 1 0 01-.24 1.01l-2.21 2.2z"/>
-          </svg>
-        </button>
-        <!-- video call -->
-        <button class="iconbtn" title="Video call" aria-label="Video call">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-            <path fill="currentColor" d="M17 10.5V7a2 2 0 00-2-2H4A2 2 0 002 7v10a2 2 0 002 2h11a2 2 0 002-2v-3.5l4 4v-11l-4 4z"/>
-          </svg>
-        </button>
-      </div>
+    </div>
+    <div class="actions">
+      <button class="iconbtn" title="Voice call" aria-label="Voice call">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path fill="currentColor" d="M6.62 10.79a15.53 15.53 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.11.37 2.31.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 3 13.6 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.27.2 2.47.57 3.58a1 1 0 01-.24 1.01l-2.21 2.2z"/>
+        </svg>
+      </button>
+      <button class="iconbtn" title="Video call" aria-label="Video call">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path fill="currentColor" d="M17 10.5V7a2 2 0 00-2-2H4A2 2 0 002 7v10a2 2 0 002 2h11a2 2 0 002-2v-3.5l4 4v-11l-4 4z"/>
+        </svg>
+      </button>
     </div>
   </nav>
 
-  <!-- Main area -->
+  <!-- Main -->
   <div class="scrollable" id="myScrollable">
     <!-- Fullscreen DP -->
     <div class="fullScreenDP" id="fullScreenDP" role="dialog" aria-modal="true" style="display:none">
       <div class="insideDP">
-        <img class="dp" id="dpImage" src="dp.png" alt="Full screen profile picture" />
-        <svg class="closeBTN" onclick="closeFullImage()" xmlns="http://www.w3.org/2000/svg" width="64" viewBox="0 0 512 512" height="64" role="button" aria-label="Close image">
+        <img class="dp" id="dpImage" src="dp.png" alt="Full screen profile picture">
+        <svg class="closeBTN" onclick="closeFullImage()" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 512 512" role="button" aria-label="Close image">
           <path class="btnColor" fill="#E04F5F" d="M504.1,256C504.1,119,393,7.9,256,7.9C119,7.9,7.9,119,7.9,256C7.9,393,119,504.1,256,504.1C393,504.1,504.1,393,504.1,256z"/>
-          <path fill="#FFF" d="M285,256l72.5-84.2c7.9-9.2,6.9-23-2.3-31c-9.2-7.9-23-6.9-30.9,2.3L256,222.4l-68.2-79.2c-7.9-9.2-21.8-10.2-31-2.3c-9.2,7.9-10.2,21.8-2.3,31L227,256l-72.5,84.2c-7.9,9.2-6.9,23,2.3,31c4.1,3.6,9.2,5.3,14.3,5.3c6.2,0,12.3-2.6,16.6-7.6l68.2-79.2l68.2,79.2c4.3,5,10.5,7.6,16.6,7.6c5.1,0,10.2-1.7,14.3-5.3c9.2-7.9,10.2-21.8,2.3-31L285,256z"/>
+          <path fill="#FFF" d="M285,256l72.5-84.2c7.9-9.2,6.9-23-2.3-31c-9.2-7.9-23-6.9-30.9,2.3L256,222.4l-68.2-79.2c-7.9-9.2-21.8-10.2-31-2.3c-9.2,7.9-10.2,21.8-2.3,31L227,256l-72.5,84.2c-7.9,9.2-6.9,23,2.3,31c4.1,3.6,9.2,5.3,14.3,5.3c6.2,0,12.3-2.6,16.6-7.6l68.2-79.2l68.2,79.2c4.3,5,10.5,7.6,16.6,7.6c5.1,0,10.2-1.7, 14.3-5.3c9.2-7.9,10.2-21.8,2.3-31L285,256z"/>
         </svg>
       </div>
     </div>
 
-    <!-- Chat list -->
+    <!-- Chat -->
     <div id="chatting" class="chatting" aria-live="polite">
       <ul id="listUL"></ul>
     </div>
 
-    <!-- Buttons area -->
-    <div id="button-container" class="button-container"></div>
-
-    <!-- WhatsApp-like composer (typing section) -->
+    <!-- WhatsApp-like composer (typing section at bottom) -->
     <div id="composer" class="composer" aria-live="polite">
       <button class="iconbtn" title="Emoji" aria-label="Emoji">
-        <!-- emoji icon -->
-        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-          <path fill="currentColor" d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm-3 7a1.5 1.5 0 11-1.5-1.5A1.5 1.5 0 019 9zm9 0a1.5 1.5 0 11-1.5-1.5A1.5 1.5 0 0118 9zM12 18a5.5 5.5 0 01-5-3h10a5.5 5.5 0 01-5 3z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm-3 7a1.5 1.5 0 11-1.5-1.5A1.5 1.5 0 019 9zm9 0a1.5 1.5 0 11-1.5-1.5A1.5 1.5 0 0118 9zM12 18a5.5 5.5 0 01-5-3h10a5.5 5.5 0 01-5 3z"/></svg>
       </button>
-
       <button class="iconbtn" title="Attach" aria-label="Attach">
-        <!-- paperclip -->
-        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-          <path fill="currentColor" d="M7.5 13.5l6.44-6.44a3.5 3.5 0 114.95 4.95L10.6 20.3a5.5 5.5 0 11-7.78-7.78l8.49-8.49"/>
-        </svg>
+        <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M7.5 13.5l6.44-6.44a3.5 3.5 0 114.95 4.95L10.6 20.3a5.5 5.5 0 11-7.78-7.78l8.49-8.49"/></svg>
       </button>
-
-      <!-- typing text area (we fill this via JS with typewriter) -->
       <div id="typingtext" class="typingtext" role="status"></div>
-
       <button class="iconbtn mic" title="Voice" aria-label="Voice">
-        <!-- mic -->
-        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-          <path fill="currentColor" d="M12 14a3 3 0 003-3V6a3 3 0 10-6 0v5a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 0014 0h-2zM11 19h2v3h-2z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 14a3 3 0 003-3V6a3 3 0 10-6 0v5a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 0014 0h-2zM11 19h2v3h-2z"/></svg>
       </button>
     </div>
   </div>
 
-  <noscript>
-    <p style="padding:1rem; text-align:center;">This invitation works best with JavaScript enabled.</p>
-  </noscript>
+  <noscript><p style="padding:1rem; text-align:center;">This invitation works best with JavaScript enabled.</p></noscript>
 </body>
 </html>
