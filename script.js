@@ -1,194 +1,147 @@
-/**********************
- * Utility
- *********************/
-const qs  = (sel) => document.querySelector(sel);
-const qid = (id)  => document.getElementById(id);
-
-function isMobileDevice() {
-  const mobilePattern = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-  return mobilePattern.test(navigator.userAgent);
-}
-const delay = (ms) => new Promise(r => setTimeout(r, ms));
+/******** Utilities ********/
+const $  = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+const byId = (id) => document.getElementById(id);
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 function scrollToBottom() {
-  const container = qid("myScrollable");
-  if (!container) return;
-  requestAnimationFrame(() => {
-    container.scrollTop = container.scrollHeight;
-  });
+  const sc = byId("myScrollable");
+  if (!sc) return;
+  requestAnimationFrame(() => sc.scrollTop = sc.scrollHeight);
 }
 
 function setLastSeen() {
   const date = new Date();
-  const lastSeen = qid("lastseen");
-  if (!lastSeen) return;
-  lastSeen.innerText = "last seen today at " + date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
+  const el = byId("lastseen");
+  if (el) el.innerText = "last seen today at " + date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
 }
 
-/**********************
- * Fullscreen DP
- *********************/
-function closeFullImage() {
-  const x = qid("fullScreenDP");
-  if (x) x.style.display = "none";
-}
-function openFullScreenImage(element) {
-  changeImageSrc(element.src);
-  const x = qid("fullScreenDP");
+/******** DP modal ********/
+function openFullScreenImage(el) {
+  changeImageSrc(el.src);
+  const x = byId("fullScreenDP");
   if (x) x.style.display = "flex";
 }
-function changeImageSrc(newSrc) {
-  const imgElement = qid("dpImage");
-  if (imgElement) imgElement.src = newSrc;
-}
+function closeFullImage(){ const x = byId("fullScreenDP"); if (x) x.style.display="none"; }
+function changeImageSrc(src){ const img = byId("dpImage"); if (img) img.src = src; }
+window.openFullScreenImage = openFullScreenImage;
+window.closeFullImage = closeFullImage;
 
-/**********************
- * Composer (typing section)
- * We "type" here for BOTH bot & user,
- * then send a bubble to the chat.
- *********************/
+/******** Composer (bottom typing) ********/
 function setComposer(text) {
-  const el = qid("typingtext");
-  if (el) el.textContent = text || "";
+  const t = byId("typingtext");
+  if (t) t.textContent = text || "";
   scrollToBottom();
 }
-
-// typewriter effect in composer
 async function typeInComposer(fullText, charDelay = 45) {
   if (!fullText) return;
   setComposer("");
   for (let i = 1; i <= fullText.length; i++) {
-    const ch = fullText[i - 1];
+    const ch = fullText[i-1];
     setComposer(fullText.slice(0, i));
     const extra = /[,.!?… ]/.test(ch) ? 55 : 0;
-    await delay(charDelay + extra);
+    await sleep(charDelay + extra);
   }
-  await delay(250);
+  await sleep(250);
 }
 
-/**********************
- * Chat bubbles
- *********************/
-function sendMessage(textToSend, type = 'received') {
-  const date = new Date();
+/******** Chat bubbles ********/
+function sendMessage(textToSend, type='received') {
   const li = document.createElement("li");
   const wrap = document.createElement("div");
   const bubble = document.createElement("div");
   const dateLabel = document.createElement("label");
 
-  dateLabel.className = "dateLabel";
-  dateLabel.innerText = date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
-
-  wrap.className = type === 'sent' ? "sent" : "received";
+  wrap.className   = type === 'sent' ? "sent" : "received";
   bubble.className = type === 'sent' ? "green" : "grey";
-  bubble.innerHTML = textToSend; // support HTML (<img>)
+  dateLabel.className = "dateLabel";
+  dateLabel.innerText = new Date().toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
 
+  bubble.innerHTML = textToSend;   // HTML allowed for <img>
   wrap.appendChild(bubble);
   li.appendChild(wrap);
-  qid("listUL").appendChild(li);
-
+  byId("listUL").appendChild(li);
   bubble.appendChild(dateLabel);
+
   setLastSeen();
   scrollToBottom();
 }
-const sendResponseMessage = (txt) => sendMessage(txt, "received");
-const sendMsg            = (txt) => sendMessage(txt, "sent");
+const sendResponseMessage = (t) => sendMessage(t, 'received');
+const sendMsg            = (t) => sendMessage(t, 'sent');
 
-/**********************
- * Conversation engine
- *********************/
-window.onload = function () {
-  onLoad();
-};
+/******** Conversation engine (auto flow) ********/
+window.onload = () => start();
 
-function onLoad() {
-  // Uncomment to block desktop:
-  // if (!isMobileDevice()) window.location.href = "/error.html";
-
+async function start() {
   setLastSeen();
-  startConversation();
-}
 
-async function startConversation() {
-  const buttonsContainer = qid("button-container");
+  // Load conversation
+  let steps = [];
+  try {
+    const res = await fetch("conversation.json");
+    steps = await res.json();
+  } catch (e) {
+    console.error("Failed to load conversation.json", e);
+    return;
+  }
 
-  fetch("conversation.json")
-    .then((r) => r.json())
-    .then(async (data) => {
-      let currentStep = 0;
-
-      function hideButtons() { buttonsContainer.innerHTML = ""; }
-      function showButtons(buttons) {
-        buttonsContainer.innerHTML = "";
-        buttons.forEach((btn) => {
-          const el = document.createElement("button");
-          el.className = "message-button";
-          el.textContent = btn.text;
-
-          el.addEventListener("click", async () => {
-            // USER typewriter in composer, then send
-            await typeInComposer(btn.text);
-            setComposer("");
-            sendMsg(btn.text);
-            hideButtons();
-
-            // Move to destination step (0-based) and show images if any
-            currentStep = btn.next;
-            const step = data[currentStep];
-
-            if (step && step.image) {
-              for (const imgUrl of step.image) {
-                sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
-              }
-            }
-            await nextStep();
-          });
-
-          buttonsContainer.appendChild(el);
-        });
-        scrollToBottom();
+  // Support BOTH old and new formats:
+  // NEW: step.message = [{from:'user'|'bot', text?:string, image?:string}]
+  // OLD: step.message = ["text", ...], step.userInitiated, step.image
+  for (const step of steps) {
+    // NEW format?
+    if (Array.isArray(step.message) && typeof step.message[0] === "object") {
+      for (const item of step.message) {
+        if (item.text) {
+          // type in composer, then add bubble from the right side
+          await typeInComposer(item.text);
+          setComposer("");
+          const side = item.from === "user" ? "sent" : "received";
+          sendMessage(item.text, side);
+          await sleep(350);
+        }
+        if (item.image) {
+          // preload to ensure it shows; also use correct GitHub raw URL
+          const url = item.image;
+          await ensureImageLoads(url);
+          sendMessage(`<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`, 'sent'); // show as sent or received—your choice
+          await sleep(250);
+        }
       }
+      continue;
+    }
 
-      async function displayMessageWithTyping(text) {
-        // BOT typewriter in composer
-        await typeInComposer(text);
+    // OLD format fallback (auto bot messages + optional images)
+    if (step.image) {
+      for (const imgUrl of step.image) {
+        const url = imgUrl.replace("refs/heads/main/", "main/"); // fix wrong GitHub path if present
+        await ensureImageLoads(url);
+        sendMessage(`<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`, 'sent');
+      }
+      await sleep(200);
+    }
+
+    if (Array.isArray(step.message)) {
+      for (const msg of step.message) {
+        await typeInComposer(msg);
         setComposer("");
-        sendResponseMessage(text);
+        sendResponseMessage(msg);
+        await sleep(350);
       }
+    }
+  }
 
-      async function nextStep() {
-        if (currentStep >= data.length) { setComposer(""); return; }
-
-        const step = data[currentStep];
-        if (!step) return;
-
-        if (step.userInitiated) {
-          // Optionally, also show step.image here before click:
-          // if (step.image) { step.image.forEach(url => sendMsg(`<img src='${url}' ...>`)); }
-          if (step.buttons) showButtons(step.buttons);
-          return;
-        }
-
-        // Automatic bot messages for this step
-        if (Array.isArray(step.message)) {
-          for (const msg of step.message) {
-            await displayMessageWithTyping(msg);
-            await delay(350);
-          }
-        }
-
-        currentStep++;
-        await delay(150);
-        return nextStep();
-      }
-
-      await nextStep();
-    })
-    .catch((err) => console.error("Error loading JSON:", err));
+  // end: clear composer
+  setComposer("");
 }
 
-/**********************
- * Expose image funcs to window (used by HTML)
- *********************/
-window.openFullScreenImage = openFullScreenImage;
-window.closeFullImage = closeFullImage;
+/******** Helpers ********/
+function ensureImageLoads(src) {
+  const url = src.replace("refs/heads/main/", "main/"); // normalize bad path
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => { console.warn("Image failed to load:", url); resolve(false); };
+    img.src = url;
+  });
+}
