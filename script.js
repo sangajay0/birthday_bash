@@ -1,69 +1,74 @@
-// --- Utilities ---
+/**********************
+ * Utility
+ *********************/
+const qs  = (sel) => document.querySelector(sel);
+const qid = (id)  => document.getElementById(id);
+
 function isMobileDevice() {
   const mobilePattern = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
   return mobilePattern.test(navigator.userAgent);
 }
-
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
 function scrollToBottom() {
-  const container = document.getElementById("myScrollable");
+  const container = qid("myScrollable");
   if (!container) return;
   requestAnimationFrame(() => {
     container.scrollTop = container.scrollHeight;
   });
 }
 
-// --- Header helpers ---
 function setLastSeen() {
   const date = new Date();
-  const lastSeen = document.getElementById("lastseen");
+  const lastSeen = qid("lastseen");
   if (!lastSeen) return;
   lastSeen.innerText = "last seen today at " + date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
 }
 
-// --- Typing bar helpers (BOTTOM) ---
-function setTypingBar(text) {
-  const bar = document.getElementById("typingbar");
-  if (!bar) return;
-  bar.textContent = text || "";
-  scrollToBottom();
-}
-
-// Typeout text letter-by-letter *in the typing bar*. Returns a Promise.
-async function typeInTypingBar(fullText, charDelay = 45) {
-  if (!fullText) return;
-  setTypingBar("");                 // clear first
-  for (let i = 1; i <= fullText.length; i++) {
-    setTypingBar(fullText.slice(0, i));
-    // slightly slower for spaces/punctuation feels nicer
-    const ch = fullText[i - 1];
-    const extra = /[,.!?… ]/.test(ch) ? 55 : 0;
-    await delay(charDelay + extra);
-  }
-  await delay(250);                  // small pause after finishing
-}
-
-// --- Image modal helpers ---
+/**********************
+ * Fullscreen DP
+ *********************/
 function closeFullImage() {
-  const x = document.getElementById("fullScreenDP");
+  const x = qid("fullScreenDP");
   if (x) x.style.display = "none";
 }
-
 function openFullScreenImage(element) {
   changeImageSrc(element.src);
-  const x = document.getElementById("fullScreenDP");
+  const x = qid("fullScreenDP");
   if (x) x.style.display = "flex";
 }
-
 function changeImageSrc(newSrc) {
-  const imgElement = document.getElementById("dpImage");
+  const imgElement = qid("dpImage");
   if (imgElement) imgElement.src = newSrc;
 }
 
-// --- Chat message rendering ---
+/**********************
+ * Composer (typing section)
+ * We "type" here for BOTH bot & user,
+ * then send a bubble to the chat.
+ *********************/
+function setComposer(text) {
+  const el = qid("typingtext");
+  if (el) el.textContent = text || "";
+  scrollToBottom();
+}
+
+// typewriter effect in composer
+async function typeInComposer(fullText, charDelay = 45) {
+  if (!fullText) return;
+  setComposer("");
+  for (let i = 1; i <= fullText.length; i++) {
+    const ch = fullText[i - 1];
+    setComposer(fullText.slice(0, i));
+    const extra = /[,.!?… ]/.test(ch) ? 55 : 0;
+    await delay(charDelay + extra);
+  }
+  await delay(250);
+}
+
+/**********************
+ * Chat bubbles
+ *********************/
 function sendMessage(textToSend, type = 'received') {
   const date = new Date();
   const li = document.createElement("li");
@@ -76,130 +81,114 @@ function sendMessage(textToSend, type = 'received') {
 
   wrap.className = type === 'sent' ? "sent" : "received";
   bubble.className = type === 'sent' ? "green" : "grey";
-  bubble.innerHTML = textToSend; // supports HTML content like <img>
+  bubble.innerHTML = textToSend; // support HTML (<img>)
 
   wrap.appendChild(bubble);
   li.appendChild(wrap);
-  bubble.appendChild(dateLabel);
-  document.getElementById("listUL").appendChild(li);
+  qid("listUL").appendChild(li);
 
+  bubble.appendChild(dateLabel);
   setLastSeen();
   scrollToBottom();
 }
+const sendResponseMessage = (txt) => sendMessage(txt, "received");
+const sendMsg            = (txt) => sendMessage(txt, "sent");
 
-function sendResponseMessage(textToSend) {
-  sendMessage(textToSend, 'received');
-}
-
-function sendMsg(input) {
-  sendMessage(input, 'sent');
-}
-
-// --- Conversation engine (with typewriter) ---
+/**********************
+ * Conversation engine
+ *********************/
 window.onload = function () {
   onLoad();
 };
 
 function onLoad() {
-  console.log("Page loaded");
-  setLastSeen();
-
-  // If you WANT to block desktop, uncomment next line:
+  // Uncomment to block desktop:
   // if (!isMobileDevice()) window.location.href = "/error.html";
 
-  const buttonsContainer = document.getElementById("button-container");
+  setLastSeen();
+  startConversation();
+}
+
+async function startConversation() {
+  const buttonsContainer = qid("button-container");
 
   fetch("conversation.json")
-    .then((response) => response.json())
+    .then((r) => r.json())
     .then(async (data) => {
       let currentStep = 0;
 
-      function hideButtons() {
+      function hideButtons() { buttonsContainer.innerHTML = ""; }
+      function showButtons(buttons) {
         buttonsContainer.innerHTML = "";
-      }
+        buttons.forEach((btn) => {
+          const el = document.createElement("button");
+          el.className = "message-button";
+          el.textContent = btn.text;
 
-      function displayButtons(buttons) {
-        buttonsContainer.innerHTML = "";
-        buttons.forEach((button) => {
-          const buttonElement = document.createElement("button");
-          buttonElement.className = "message-button";
-          buttonElement.textContent = button.text;
-
-          buttonElement.addEventListener("click", async () => {
-            currentStep = button.next;                 // 0-based
-            const step = data[currentStep];
-
-            // Echo user's selection as a sent message
-            sendMsg(button.text);
+          el.addEventListener("click", async () => {
+            // USER typewriter in composer, then send
+            await typeInComposer(btn.text);
+            setComposer("");
+            sendMsg(btn.text);
             hideButtons();
 
-            // If destination step has images, render them immediately (inline)
+            // Move to destination step (0-based) and show images if any
+            currentStep = btn.next;
+            const step = data[currentStep];
+
             if (step && step.image) {
               for (const imgUrl of step.image) {
                 sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
               }
             }
-
-            await nextStep();                          // continue flow
+            await nextStep();
           });
 
-          buttonsContainer.appendChild(buttonElement);
+          buttonsContainer.appendChild(el);
         });
         scrollToBottom();
       }
 
-      // Shows a single message with bottom typewriter first, then sends bubble
-      async function displayMessageWithTyping(msgText) {
-        // show progressive typing in bottom bar
-        await typeInTypingBar(msgText);
-        // then clear typing bar and send final message bubble
-        setTypingBar("");
-        sendResponseMessage(msgText);
+      async function displayMessageWithTyping(text) {
+        // BOT typewriter in composer
+        await typeInComposer(text);
+        setComposer("");
+        sendResponseMessage(text);
       }
 
-      // Drives the conversation for the current step
       async function nextStep() {
-        if (currentStep >= data.length) {
-          setTypingBar(""); // no further typing
-          return;
-        }
+        if (currentStep >= data.length) { setComposer(""); return; }
 
         const step = data[currentStep];
-
         if (!step) return;
 
         if (step.userInitiated) {
-          // For user-initiated steps, just show buttons (and optional images if you want)
-          if (step.buttons) displayButtons(step.buttons);
-          // If you also want to show step.image on user-initiated steps (before click), uncomment:
-          // if (step.image) {
-          //   for (const imgUrl of step.image) {
-          //     sendMsg(`<img src='${imgUrl}' style='max-width: 100%; height: auto; margin-top: 10px;'>`);
-          //   }
-          // }
+          // Optionally, also show step.image here before click:
+          // if (step.image) { step.image.forEach(url => sendMsg(`<img src='${url}' ...>`)); }
+          if (step.buttons) showButtons(step.buttons);
           return;
         }
 
-        // Automatic bot messages
-        if (step.message && Array.isArray(step.message)) {
-          for (let i = 0; i < step.message.length; i++) {
-            const msg = step.message[i];
+        // Automatic bot messages for this step
+        if (Array.isArray(step.message)) {
+          for (const msg of step.message) {
             await displayMessageWithTyping(msg);
-            // short pause between messages feels natural
             await delay(350);
           }
         }
 
-        // After finishing this step, advance and recurse
         currentStep++;
-        await delay(150); // tiny buffer
+        await delay(150);
         return nextStep();
       }
 
-      console.log("Started Conversation");
-      await nextStep(); // kick off
+      await nextStep();
     })
-    .catch((error) => {
-      console.error("Error loading JSON data:", error);
-    });
+    .catch((err) => console.error("Error loading JSON:", err));
 }
+
+/**********************
+ * Expose image funcs to window (used by HTML)
+ *********************/
+window.openFullScreenImage = openFullScreenImage;
+window.closeFullImage = closeFullImage;
