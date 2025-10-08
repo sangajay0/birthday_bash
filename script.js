@@ -91,8 +91,8 @@ async function showTyping(ms = 1200) {
   // do not go idle yet; let the sender set goIdleSoon() AFTER sending bubble
 }
 
-/* --- Letter-by-letter only for the greeting --- */
-const TYPEWRITER_TARGET = "Hey bestie, happy birthday";
+/* --- Letter-by-letter only for THIS message --- */
+const TYPEWRITER_TARGET = "Happy birthday bava 🎊😊🎉🎂";   // <-- UPDATED
 function shouldTypewriter(text) {
   return (text || "").trim().toLowerCase() === TYPEWRITER_TARGET.toLowerCase();
 }
@@ -172,7 +172,7 @@ async function startConversation() {
 
   let steps = [];
   try {
-    const res = await fetch("conversation.json");
+    const res = await fetch("conversation.json", { cache: "no-store" }); // fresher loads
     steps = await res.json();
   } catch (e) {
     console.error("Failed to load conversation.json", e);
@@ -183,9 +183,11 @@ async function startConversation() {
   let currentStep = 0;
 
   function hideButtons() {
+    if (!buttonsContainer) return;  // guard if container not present
     buttonsContainer.innerHTML = "";
   }
   function showButtons(buttons) {
+    if (!buttonsContainer) return;  // guard if container not present
     buttonsContainer.innerHTML = "";
     buttons.forEach((btn) => {
       const el = document.createElement("button");
@@ -193,13 +195,12 @@ async function startConversation() {
       el.textContent = btn.text;
 
       el.addEventListener("click", async () => {
-        // USER typing: special greeting -> typewriter; others -> dots
+        // USER typing: target gets typewriter; others get dots
         if (shouldTypewriter(btn.text)) {
           await typeInComposerLetterByLetter(btn.text);
         } else {
           await showTyping(typingDurationFor(btn.text));
         }
-        // Sending: keep online briefly after
         goOnline();
         sendMsg(btn.text);
         goIdleSoon(900);
@@ -217,7 +218,7 @@ async function startConversation() {
               goOnline();
               sendMessage(
                 `<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`,
-                "sent" // 👉 force right side for shared images
+                "sent" // force right side for shared images
               );
               goIdleSoon(900);
             }
@@ -249,14 +250,14 @@ async function startConversation() {
         await sleep(350);
       }
       if (item.image) {
-        // Always treat images as SHARED by "us" → show on right side
+        // Always treat images as SHARED by "us" → right side
         await showTyping(900);
         const url = await ensureImageLoads(item.image);
         if (url) {
           goOnline();
           sendMessage(
             `<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`,
-            "sent" // 👉 force right side
+            "sent"
           );
           goIdleSoon(900);
           await sleep(250);
@@ -266,7 +267,7 @@ async function startConversation() {
   }
 
   async function handleOldFormatStep(step) {
-    // Old format images → also right side
+    // Old format images → right side
     if (step.image) {
       await showTyping(900);
       for (const raw of step.image) {
@@ -275,7 +276,7 @@ async function startConversation() {
           goOnline();
           sendMessage(
             `<img src="${url}" alt="" style="max-width:100%; height:auto; border-radius:10px;">`,
-            "sent" // 👉 force right side
+            "sent"
           );
           goIdleSoon(900);
         }
