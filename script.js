@@ -78,6 +78,36 @@ function setComposerTyping(on = true) {
     setComposer("");
   }
 }
+
+/**********************
+ * Typewriter / composer helpers
+ *********************/
+
+// existing special-case target (keep if you want that preserved)
+const TYPEWRITER_TARGET = "Happy birthday Fatima cuttie 🎊😊🎉🎂";
+
+// Persisted flag: true until the user sends their first message from this session (persisted to localStorage)
+let firstUserMessagePending = localStorage.getItem('firstUserMessageDone') !== '1';
+
+// keep the existing shouldTypewriter function (unchanged)
+function shouldTypewriter(text) {
+  return (text || "").trim().toLowerCase() === TYPEWRITER_TARGET.toLowerCase();
+}
+
+// new helper: return true when we should show letter-by-letter in the composer.
+// - true if the text matches the special target OR
+// - true if this is a user-originated piece of text and it's the user's first message.
+function shouldTypewriterFor(text = "", fromUser = false) {
+  if (shouldTypewriter(text)) return true;
+  if (fromUser && firstUserMessagePending) return true;
+  return false;
+}
+
+function markFirstUserMessageDone() {
+  firstUserMessagePending = false;
+  try { localStorage.setItem('firstUserMessageDone', '1'); } catch (e) { /* ignore */ }
+}
+
 function typingDurationFor(text = "", minMs = 900, maxMs = 2400) {
   const perChar = 40;
   const est = minMs + Math.floor((text.length * perChar) / 4);
@@ -92,10 +122,6 @@ async function showTyping(ms = 1200) {
 }
 
 /* --- Letter-by-letter only for THIS message --- */
-const TYPEWRITER_TARGET = "Happy birthday bava 🎊😊🎉🎂";   // <-- UPDATED
-function shouldTypewriter(text) {
-  return (text || "").trim().toLowerCase() === TYPEWRITER_TARGET.toLowerCase();
-}
 async function typeInComposerLetterByLetter(fullText, charDelay = 45) {
   if (!fullText) return;
   goOnline();                // online while typing
@@ -165,9 +191,8 @@ function ensureImageLoads(src) {
  * Conversation engine
  * Supports NEW & OLD formats
  *********************/
-window.onload = () => startConversation();
 
-async function startConversation() {
+(async function main() {
   setLastSeen();
 
   let steps = [];
@@ -196,7 +221,7 @@ async function startConversation() {
 
       el.addEventListener("click", async () => {
         // USER typing: target gets typewriter; others get dots
-        if (shouldTypewriter(btn.text)) {
+        if (shouldTypewriterFor(btn.text, true)) {
           await typeInComposerLetterByLetter(btn.text);
         } else {
           await showTyping(typingDurationFor(btn.text));
@@ -206,6 +231,9 @@ async function startConversation() {
         goIdleSoon(900);
 
         hideButtons();
+
+        // mark that the user has now sent their first message (so future user texts won't auto-typewriter)
+        if (firstUserMessagePending) markFirstUserMessageDone();
 
         // Destination step (if has images, show as SENT/right side)
         currentStep = btn.next;
@@ -237,13 +265,18 @@ async function startConversation() {
     // step.message: [{from:'user'|'bot', text?, image?}, ...]
     for (const item of step.message) {
       if (item.text) {
-        if (shouldTypewriter(item.text) && (item.from || "").toLowerCase() === "user") {
+        const fromIsUser = (item.from || "").toLowerCase() === "user";
+        if (shouldTypewriterFor(item.text, fromIsUser)) {
           await typeInComposerLetterByLetter(item.text);
         } else {
           await showTyping(typingDurationFor(item.text));
         }
+        // If this was a user-originated item, and we just showed the composer typewriter for the "first message",
+        // mark the first-message flag consumed so subsequent user messages don't auto-typewriter.
+        if (fromIsUser && firstUserMessagePending) markFirstUserMessageDone();
+
         // Send bubble on correct side; keep online briefly after sending
-        const side = (item.from || "").toLowerCase() === "user" ? "sent" : "received";
+        const side = fromIsUser ? "sent" : "received";
         goOnline();
         sendMessage(item.text, side);
         goIdleSoon(900);
@@ -330,4 +363,4 @@ async function startConversation() {
   }
 
   await nextStep();
-}
+})();
